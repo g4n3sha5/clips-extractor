@@ -75,26 +75,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DL-01 | Phase ? | Pending |
-| DL-02 | Phase ? | Pending |
-| DL-03 | Phase ? | Pending |
-| EXT-01 | Phase ? | Pending |
-| EXT-02 | Phase ? | Pending |
-| EXT-03 | Phase ? | Pending |
-| EXT-04 | Phase ? | Pending |
-| DESC-01 | Phase ? | Pending |
-| DESC-02 | Phase ? | Pending |
-| PROG-01 | Phase ? | Pending |
-| SESS-01 | Phase ? | Pending |
-| SESS-02 | Phase ? | Pending |
-| UX-01 | Phase ? | Pending |
-| UX-02 | Phase ? | Pending |
+| DL-01 | Phase 2 | Pending |
+| DL-02 | Phase 2 | Pending |
+| DL-03 | Phase 2 | Pending |
+| EXT-01 | Phase 3 | Pending |
+| EXT-02 | Phase 3 | Pending |
+| EXT-03 | Phase 3 | Pending |
+| EXT-04 | Phase 3 | Pending |
+| DESC-01 | Phase 4 | Pending |
+| DESC-02 | Phase 4 | Pending |
+| PROG-01 | Phase 3 | Pending |
+| SESS-01 | Phase 3 | Pending |
+| SESS-02 | Phase 3 | Pending |
+| UX-01 | Phase 3 | Pending |
+| UX-02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
