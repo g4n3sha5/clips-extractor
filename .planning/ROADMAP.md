@@ -27,7 +27,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Running `uvicorn main:app` serves the app at localhost:8000
   2. Opening localhost:8000 in a browser shows the single-page UI (no frameworks, no build step)
   3. Cache directory (~/.drillclips/cache/) and clips/ output directory are created automatically on first run
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Config layer: uv project init, Settings model, GET/POST /api/config, GET /api/health
+- [ ] 01-02-PLAN.md — App wiring: main.py with lifespan + StaticFiles, minimal single-page UI shell
 
 ### Phase 2: Download
 **Goal**: Users can paste a YouTube or Bilibili URL and have the video downloaded and cached once
@@ -67,7 +71,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/2 | Not started | - |
 | 2. Download | 0/? | Not started | - |
 | 3. Extraction | 0/? | Not started | - |
 | 4. Metadata | 0/? | Not started | - |
