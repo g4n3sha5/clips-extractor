@@ -2,36 +2,37 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Fast, keyboard-friendly clip extraction from a watched instructional — paste URL once, stamp out clips without friction.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** v1.1 — UX overhaul (timeline scrubber, cache panel, dark minimal redesign)
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-19 — Roadmap created
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-20 — Milestone v1.1 started
 
 Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
+- Total plans completed: 2 (Phase 1 formal plans) + Phases 2–4 implemented as single delivery
 - Average duration: -
-- Total execution time: 0 hours
+- Total execution time: -
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Foundation | 2 | - | - |
+| 2–4 | impl | - | - |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01, 01-02, full-stack v1
+- Trend: Feature-complete for v1 requirements
 
 *Updated after each plan completion*
 
@@ -48,15 +49,15 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- Optional: move `pytest` to dev dependency group; split formal plan docs for Phases 2–4 if desired
 
 ### Blockers/Concerns
 
-- Phase 2: Bilibili anonymous 720p availability is unverified — test format string against real Bilibili URL during Phase 2 and handle "format not available" with user-facing error
-- Phase 3: yt-dlp progress hook runs in yt-dlp's internal thread; asyncio.Queue.put_nowait() is thread-safe but validate before frontend SSE depends on it
+- Bilibili may require verification/captcha in some regions — yt-dlp errors surface in the SSE status line
+- Host must have `ffmpeg` installed for extraction (see README)
 
 ## Session Continuity
 
-Last session: 2026-03-19
-Stopped at: Roadmap created — ready to plan Phase 1
-Resume file: None
+Last session: 2026-03-20
+Stopped at: Milestone v1.1 initialized, defining requirements
+Resume file: .planning/REQUIREMENTS.md

@@ -61,5 +61,16 @@ Fast, keyboard-friendly clip extraction from a watched instructional — paste U
 | JSON metadata hidden | User wants human-readable descriptions, not structured UI | — Pending |
 | 720p cap | Sufficient quality for instructionals, keeps files manageable | — Pending |
 
+## Current Milestone: v1.1 UX Overhaul
+
+**Goal:** Replace the v1 form UI with a dark, minimal interface featuring a timeline scrubber for clip selection, cache visibility, and a clean clip list.
+
+**Target features:**
+- Timeline scrubber with draggable in/out handles for setting clip range
+- Cache status badge on URL field (cached / downloading / not cached)
+- Cache management panel listing all cached videos with size, date, and delete
+- Dark minimal UI redesign (complete visual overhaul)
+- Streamlined single-clip workflow: scrub → name → cut → appears in list → reset
+
 ---
-*Last updated: 2026-03-19 after initialization*
+*Last updated: 2026-03-20 — milestone v1.1 started*
