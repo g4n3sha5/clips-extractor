@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Fast, keyboard-friendly clip extraction from a watched instructional — paste URL once, stamp out clips without friction.
-**Current focus:** v1.1 — UX overhaul (timeline scrubber, cache panel, dark minimal redesign)
+**Current focus:** v1.1 — Phase 5: Dark UI Overhaul
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-20 — Milestone v1.1 started
+Phase: 5 of 7 (Dark UI Overhaul)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-03-20 — v1.1 roadmap created (Phases 5–7)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [####------] 40% (v1 complete, v1.1 not started)
 
 ## Performance Metrics
 
@@ -55,9 +55,10 @@ Recent decisions affecting current work:
 
 - Bilibili may require verification/captcha in some regions — yt-dlp errors surface in the SSE status line
 - Host must have `ffmpeg` installed for extraction (see README)
+- Timeline scrubber (Phase 7) requires the browser to have access to video duration metadata — ensure cached video path is served or duration is returned from the API
 
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Milestone v1.1 initialized, defining requirements
-Resume file: .planning/REQUIREMENTS.md
+Stopped at: v1.1 roadmap created — Phases 5, 6, 7 defined
+Resume file: .planning/ROADMAP.md

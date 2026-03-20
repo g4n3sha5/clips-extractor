@@ -4,6 +4,8 @@
 
 Four phases that build sequentially on each other. Phase 1 creates the running app shell. Phase 2 adds the download and cache layer — the slow operation that only happens once per instructional. Phase 3 wires in clip extraction, live progress feedback, and the session clip list, completing the end-to-end workflow. Phase 4 adds the description field and JSON sidecar metadata that lets clips self-document. Each phase delivers something independently verifiable before the next begins.
 
+Milestone v1.1 (Phases 5–7) replaces the v1 form UI with a dark, minimal interface. Phase 5 lands the dark theme and post-extraction reset. Phase 6 adds cache visibility and management. Phase 7 delivers the timeline scrubber — the centerpiece of the overhaul.
+
 ## Phases
 
 **Phase Numbering:**
@@ -12,10 +14,13 @@ Four phases that build sequentially on each other. Phase 1 creates the running a
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Running FastAPI app with minimal UI shell and config layer
-- [ ] **Phase 2: Download** - URL-keyed download and cache via yt-dlp
-- [ ] **Phase 3: Extraction** - Clip cutting, live progress, and session list
-- [ ] **Phase 4: Metadata** - Description field and JSON sidecar
+- [x] **Phase 1: Foundation** - Running FastAPI app with minimal UI shell and config layer
+- [x] **Phase 2: Download** - URL-keyed download and cache via yt-dlp
+- [x] **Phase 3: Extraction** - Clip cutting, live progress, and session list
+- [x] **Phase 4: Metadata** - Description field and JSON sidecar
+- [ ] **Phase 5: Dark UI Overhaul** - Complete visual redesign to dark minimal theme plus post-extraction form reset
+- [ ] **Phase 6: Cache Visibility** - Cache status badge on URL field and cache management panel with delete
+- [ ] **Phase 7: Timeline Scrubber** - Visual timeline scrubber with draggable in/out handles synced to timestamp fields
 
 ## Phase Details
 
@@ -30,8 +35,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Config layer: uv project init, Settings model, GET/POST /api/config, GET /api/health
-- [ ] 01-02-PLAN.md — App wiring: main.py with lifespan + StaticFiles, minimal single-page UI shell
+- [x] 01-01-PLAN.md — Config layer: uv project init, Settings model, GET/POST /api/config, GET /api/health
+- [x] 01-02-PLAN.md — App wiring: main.py with lifespan + StaticFiles, minimal single-page UI shell
 
 ### Phase 2: Download
 **Goal**: Users can paste a YouTube or Bilibili URL and have the video downloaded and cached once
@@ -64,14 +69,49 @@ Plans:
   2. After extraction, a <filename>.json file exists next to the .mp4 with the metadata contents (not visible in UI)
 **Plans**: TBD
 
+### Phase 5: Dark UI Overhaul
+**Goal**: The entire UI runs on a dark minimal theme and resets to a clean state after each clip extraction
+**Depends on**: Phase 4
+**Requirements**: UI-03, UI-04
+**Success Criteria** (what must be TRUE):
+  1. Opening the app shows a dark background with light text — no white or light-grey backgrounds visible anywhere in the layout
+  2. All interactive elements (inputs, buttons, session list) render consistently within the dark theme
+  3. After a clip extraction completes, the filename field is cleared and the form is ready for the next clip without a page reload
+**Plans**: TBD
+
+### Phase 6: Cache Visibility
+**Goal**: Users can see cache status at a glance and delete cached videos they no longer need
+**Depends on**: Phase 5
+**Requirements**: CACHE-01, CACHE-02, CACHE-03
+**Success Criteria** (what must be TRUE):
+  1. The URL field shows a status badge that reads "Cached", "Downloading", or "Not cached" based on actual cache state
+  2. The badge updates in real time — switching from "Not cached" to "Downloading" to "Cached" as a download progresses
+  3. User can open a cache panel that lists each cached video with its file size and cache date
+  4. User can delete a cached video from the panel, and it disappears from the list and from disk
+**Plans**: TBD
+
+### Phase 7: Timeline Scrubber
+**Goal**: Users can drag handles on a visual timeline to set clip in/out points instead of typing timestamps
+**Depends on**: Phase 6
+**Requirements**: TL-01, TL-02, TL-03
+**Success Criteria** (what must be TRUE):
+  1. When a cached video is loaded, a horizontal timeline scrubber is visible representing the full video duration
+  2. User can drag the left handle to set the clip start time and the right handle to set the clip end time
+  3. Dragging a handle updates the corresponding timestamp field in real time
+  4. Typing a timestamp directly into a start/end field moves the corresponding scrubber handle to the matching position
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
-| 2. Download | 0/? | Not started | - |
-| 3. Extraction | 0/? | Not started | - |
-| 4. Metadata | 0/? | Not started | - |
+| 1. Foundation | 2/2 | Complete | 2026-03-19 |
+| 2. Download | integrated | Complete | 2026-03-19 |
+| 3. Extraction | integrated | Complete | 2026-03-19 |
+| 4. Metadata | integrated | Complete | 2026-03-19 |
+| 5. Dark UI Overhaul | 0/? | Not started | - |
+| 6. Cache Visibility | 0/? | Not started | - |
+| 7. Timeline Scrubber | 0/? | Not started | - |
