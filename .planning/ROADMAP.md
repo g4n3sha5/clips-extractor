@@ -18,9 +18,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Download** - URL-keyed download and cache via yt-dlp
 - [x] **Phase 3: Extraction** - Clip cutting, live progress, and session list
 - [x] **Phase 4: Metadata** - Description field and JSON sidecar
-- [ ] **Phase 5: Dark UI Overhaul** - Complete visual redesign to dark minimal theme plus post-extraction form reset
-- [ ] **Phase 6: Cache Visibility** - Cache status badge on URL field and cache management panel with delete
-- [ ] **Phase 7: Timeline Scrubber** - Visual timeline scrubber with draggable in/out handles synced to timestamp fields
+- [x] **Phase 5: Dark UI Overhaul** - Complete visual redesign to dark minimal theme plus post-extraction form reset
+- [x] **Phase 6: Cache Visibility** - Cache status badge on URL field and cache management panel with delete
+- [x] **Phase 7: Timeline Scrubber** - Visual timeline scrubber with draggable in/out handles synced to timestamp fields
 
 ## Phase Details
 
@@ -77,7 +77,10 @@ Plans:
   1. Opening the app shows a dark background with light text — no white or light-grey backgrounds visible anywhere in the layout
   2. All interactive elements (inputs, buttons, session list) render consistently within the dark theme
   3. After a clip extraction completes, the filename field is cleared and the form is ready for the next clip without a page reload
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 05-01-PLAN.md — Dark theme CSS tokens + post-extraction form reset (UI-03, UI-04)
 
 ### Phase 6: Cache Visibility
 **Goal**: Users can see cache status at a glance and delete cached videos they no longer need
@@ -112,6 +115,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Download | integrated | Complete | 2026-03-19 |
 | 3. Extraction | integrated | Complete | 2026-03-19 |
 | 4. Metadata | integrated | Complete | 2026-03-19 |
-| 5. Dark UI Overhaul | 0/? | Not started | - |
-| 6. Cache Visibility | 0/? | Not started | - |
-| 7. Timeline Scrubber | 0/? | Not started | - |
+| 5. Dark UI Overhaul | 1/1 | Complete | 2026-03-20 |
+| 6. Cache Visibility | integrated | Complete | 2026-03-20 |
+| 7. Timeline Scrubber | integrated | Complete | 2026-03-20 |
