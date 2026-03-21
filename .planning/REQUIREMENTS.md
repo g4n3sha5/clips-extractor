@@ -45,20 +45,20 @@ Requirements for UX Overhaul milestone.
 
 ### Timeline
 
-- [ ] **TL-01**: User can see a visual timeline scrubber for the currently cached video
-- [ ] **TL-02**: User can drag in-point and out-point handles on the scrubber to set clip start and end times
-- [ ] **TL-03**: Scrubber handle positions are reflected in the start/end timestamp fields (and vice versa)
+- [x] **TL-01**: User can see a visual timeline scrubber for the currently cached video
+- [x] **TL-02**: User can drag in-point and out-point handles on the scrubber to set clip start and end times
+- [x] **TL-03**: Scrubber handle positions are reflected in the start/end timestamp fields (and vice versa)
 
 ### Cache
 
-- [ ] **CACHE-01**: URL field shows a status badge indicating whether the video is cached, downloading, or not cached
-- [ ] **CACHE-02**: User can open a cache management panel listing all cached videos with size and date
-- [ ] **CACHE-03**: User can delete a cached video from the cache management panel
+- [x] **CACHE-01**: URL field shows a status badge indicating whether the video is cached, downloading, or not cached
+- [x] **CACHE-02**: User can open a cache management panel listing all cached videos with size and date
+- [x] **CACHE-03**: User can delete a cached video from the cache management panel
 
 ### UI
 
-- [ ] **UI-03**: UI uses a dark minimal theme (complete visual overhaul replacing current light form layout)
-- [ ] **UI-04**: After clip extraction completes, the form resets to scrub-ready state (filename cleared, scrubber reset)
+- [x] **UI-03**: UI uses a dark minimal theme (complete visual overhaul replacing current light form layout)
+- [x] **UI-04**: After clip extraction completes, the form resets to scrub-ready state (filename cleared, scrubber reset)
 
 ## v2 Requirements
 
@@ -110,21 +110,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SESS-02 | Phase 3 | Done |
 | UX-01 | Phase 3 | Done |
 | UX-02 | Phase 1 | Done |
-| UI-03 | Phase 5 | Pending |
-| UI-04 | Phase 5 | Pending |
-| CACHE-01 | Phase 6 | Pending |
-| CACHE-02 | Phase 6 | Pending |
-| CACHE-03 | Phase 6 | Pending |
-| TL-01 | Phase 7 | Pending |
-| TL-02 | Phase 7 | Pending |
-| TL-03 | Phase 7 | Pending |
+| UI-03 | Phase 5 | Done |
+| UI-04 | Phase 5 | Done |
+| CACHE-01 | Phase 6 | Done |
+| CACHE-02 | Phase 6 | Done |
+| CACHE-03 | Phase 6 | Done |
+| TL-01 | Phase 7 | Done |
+| TL-02 | Phase 7 | Done |
+| TL-03 | Phase 7 | Done |
 
 **Coverage:**
 - v1 requirements: 14 total — all Done ✓
-- v1.1 requirements: 8 total — all mapped ✓
+- v1.1 requirements: 8 total — all Done ✓
 - Mapped to phases: 8/8
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-20 — v1.1 traceability updated (Phases 5–7)*
+*Last updated: 2026-03-20 — v1.1 requirements completed (Phases 5–7)*

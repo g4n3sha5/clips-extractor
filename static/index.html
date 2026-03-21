@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drill Clip Extractor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222d;
+      --surface2: #232d3a;
+      --border: #334155;
+      --text: #e8eef5;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-dim: rgba(56, 189, 248, 0.15);
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --radius: 12px;
+      --font: "DM Sans", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+    h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.35rem;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 1.5rem;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      padding: 1.1rem 1.15rem;
+    }
+    section h2 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 0.85rem;
+      font-weight: 600;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+    input[type="url"],
+    input[type="text"],
+    select,
+    textarea,
+    button {
+      font: inherit;
+      border-radius: 8px;
+    }
+    input[type="url"],
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #64748b;
+    }
+    textarea {
+      min-height: 7rem;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: flex-end;
+    }
+    .row .field {
+      flex: 1 1 140px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      padding: 0.55rem 1rem;
+      font-weight: 600;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: #2d3a4a;
+    }
+    .btn-danger {
+      background: transparent;
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+    }
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      min-height: 2rem;
+      font-size: 0.9rem;
+    }
+    #status {
+      color: var(--muted);
+      flex: 1 1 200px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .pill-ok {
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--ok);
+      border: 1px solid rgba(74, 222, 128, 0.35);
+    }
+    .pill-warn {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--warn);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+    .pill-muted {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .hint {
+      margin: 0.5rem 0 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .hint strong { color: var(--text); font-weight: 600; }
+    #clip-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    #clip-list li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    #clip-list li:last-child { border-bottom: none; }
+    #clip-list .meta {
+      flex: 1 1 200px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    #clip-list .name { color: var(--text); font-weight: 600; }
+    .clip-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .clip-head h2 { margin: 0; }
+    footer.note {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    details.cache-panel {
+      margin-top: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface2);
+      padding: 0.5rem 0.85rem;
+    }
+    details.cache-panel > summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--accent);
+      list-style: none;
+    }
+    details.cache-panel > summary::-webkit-details-marker { display: none; }
+    .cache-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 0.65rem;
+    }
+    .cache-table th,
+    .cache-table td {
+      text-align: left;
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .cache-table th { color: var(--muted); font-weight: 600; }
+    .cache-table tr:last-child td { border-bottom: none; }
+    .timeline-wrap {
+      margin-top: 0.75rem;
+    }
+    .timeline-wrap[hidden] { display: none !important; }
+    #preview-video {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      left: -9999px;
+    }
+    .timeline {
+      position: relative;
+      height: 36px;
+      margin-top: 0.35rem;
+      user-select: none;
+      touch-action: none;
+    }
+    .timeline-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 10px;
+      transform: translateY(-50%);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .timeline-range {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: var(--accent-dim);
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .timeline-handle {
+      position: absolute;
+      top: 50%;
+      width: 14px;
+      height: 22px;
+      margin-top: -11px;
+      margin-left: -7px;
+      padding: 0;
+      border-radius: 4px;
+      background: var(--accent);
+      border: 1px solid #0ea5e9;
+      cursor: grab;
+      z-index: 2;
+    }
+    .timeline-handle:active { cursor: grabbing; }
+    .timeline-handle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Drill Clip Extractor</h1>
+    <p class="tagline">Download a lesson once, then cut as many clips as you need — fast, local, ffmpeg stream-copy.</p>
+
+    <section id="source-section" aria-labelledby="source-heading">
+      <h2 id="source-heading">1 · Video source</h2>
+      <label for="url-input">Instructional URL (YouTube or Bilibili)</label>
+      <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off">
+      <label for="library-select" class="hint" style="margin-top:0.85rem;">Or pick a video already on disk</label>
+      <select id="library-select" aria-label="Cached videos">
+        <option value="">— Library (after first download) —</option>
+      </select>
+      <div class="actions">
+        <button type="button" class="btn-primary" id="prepare-btn">Prepare video</button>
+        <span class="pill pill-muted" id="cache-pill" hidden>Not cached</span>
+      </div>
+      <details class="cache-panel" id="cache-panel">
+        <summary>Cache library — size &amp; date, delete entries</summary>
+        <table class="cache-table" id="cache-table" aria-label="Cached videos">
+          <thead><tr><th>Source</th><th>Size</th><th>Cached</th><th></th></tr></thead>
+          <tbody id="cache-table-body"></tbody>
+        </table>
+        <p class="hint" id="cache-empty">No videos cached yet.</p>
+      </details>
+      <p class="hint">Prepare downloads <strong>once</strong> per URL (up to 720p). After that, change start/end and extract again — <strong>no re-download</strong>.</p>
+    </section>
+
+    <section id="clip-section" aria-labelledby="clip-heading">
+      <h2 id="clip-heading">2 · Extract clip</h2>
+      <form id="clip-form">
+        <video id="preview-video" preload="metadata" playsinline muted></video>
+        <div class="timeline-wrap" id="timeline-wrap" hidden>
+          <label id="timeline-label">Clip range (drag handles or type times)</label>
+          <div class="timeline" id="timeline" role="group" aria-labelledby="timeline-label">
+            <div class="timeline-track" id="timeline-track">
+              <div class="timeline-range" id="timeline-range"></div>
+              <button type="button" class="timeline-handle" id="handle-start" aria-label="Clip start on timeline"></button>
+              <button type="button" class="timeline-handle" id="handle-end" aria-label="Clip end on timeline"></button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="start">Start</label>
+            <input type="text" id="start" placeholder="0:30" pattern="\d+:\d{2}(:\d{2})?" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="end">End</label>
+            <input type="text" id="end" placeholder="1:05" pattern="\d+:\d{2}(:\d{2})?" inputmode="numeric" autocomplete="off">
+          </div>
+        </div>
+        <label for="filename">Output filename</label>
+        <input type="text" id="filename" placeholder="armbar-entry" autocomplete="off">
+        <p class="hint" style="margin-top:0.35rem;">Each clip’s JSON sidecar stores the video title (from the download) and the start–end range — nothing else.</p>
+        <button type="submit" class="btn-primary" id="extract-btn">Extract clip</button>
+      </form>
+    </section>
+
+    <section id="session-section" aria-labelledby="session-heading">
+      <div class="clip-head">
+        <h2 id="session-heading">Clips this session</h2>
+        <button type="button" class="btn-danger" id="clear-clips-btn">Clear list</button>
+      </div>
+      <ul id="clip-list"></ul>
+      <p class="hint" id="clips-empty" style="margin-top:0.5rem;">No clips yet. Extract one above; switching URLs does not clear this list.</p>
+    </section>
+
+    <section id="settings-section" aria-label="Storage and encoding settings">
+      <details class="cache-panel" id="settings-panel">
+        <summary>Storage &amp; encoding</summary>
+        <p class="hint">Saved to <code>~/.drillclips/config.json</code>. Applies immediately — no restart.</p>
+        <label for="settings-cache-dir">Cache directory</label>
+        <input type="text" id="settings-cache-dir" autocomplete="off" spellcheck="false">
+        <label for="settings-output-dir">Clips output directory</label>
+        <input type="text" id="settings-output-dir" autocomplete="off" spellcheck="false">
+        <div class="row" style="margin-top:0.65rem;">
+          <div class="field">
+            <label for="settings-crf">Clip CRF (18–51)</label>
+            <input type="number" id="settings-crf" min="18" max="51" step="1" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="settings-preset">x264 preset</label>
+            <input type="text" id="settings-preset" placeholder="medium" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="settings-audio">AAC kb/s</label>
+            <input type="number" id="settings-audio" min="32" max="320" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="actions" style="margin-top:0.75rem;">
+          <button type="button" class="btn-primary" id="settings-save-btn">Save settings</button>
+        </div>
+      </details>
+    </section>
+
+    <div class="status-bar" role="status">
+      <span id="status"></span>
+    </div>
+    <footer class="note" id="config-foot"></footer>
+  </div>
+
+  <script>
+    var timelineDuration = 0;
+    var currentCacheKey = null;
+    var timelineDrag = null;
+    var MIN_GAP = 0.25;
+
+    function setStatus(text) {
+      document.getElementById("status").textContent = text || "";
+    }
+
+    function parseTimestamp(str) {
+      var t = String(str).trim();
+      if (!t) throw new Error("empty");
+      var parts = t.split(":");
+      if (parts.length === 1) return parseFloat(parts[0]);
+      if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+      if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+      throw new Error("bad");
+    }
+
+    function formatTimestamp(sec) {
+      if (!isFinite(sec) || sec < 0) return "0:00";
+      var h = Math.floor(sec / 3600);
+      var m = Math.floor((sec % 3600) / 60);
+      var s = sec - h * 3600 - m * 60;
+      var frac = s % 1;
+      if (h > 0) {
+        return h + ":" + String(m).padStart(2, "0") + ":" + (frac ? s.toFixed(2) : String(Math.floor(s)).padStart(2, "0"));
+      }
+      return m + ":" + (frac ? s.toFixed(2) : String(Math.floor(s)).padStart(2, "0"));
+    }
+
+    function setPill(cached, sizeBytes) {
+      var el = document.getElementById("cache-pill");
+      el.hidden = false;
+      if (cached) {
+        el.className = "pill pill-ok";
+        if (sizeBytes != null) {
+          var mb = (sizeBytes / (1024 * 1024)).toFixed(1);
+          el.textContent = "Cached · " + mb + " MB";
+        } else {
+          el.textContent = "Cached";
+        }
+      } else {
+        el.className = "pill pill-warn";
+        el.textContent = "Not cached";
+      }
+    }
+
+    function setPillDownloading() {
+      var el = document.getElementById("cache-pill");
+      el.hidden = false;
+      el.className = "pill pill-warn";
+      el.textContent = "Downloading";
+    }
+
+    function hidePill() {
+      var el = document.getElementById("cache-pill");
+      el.hidden = true;
+    }
+
+    function updateTimelineVisuals() {
+      var d = timelineDuration;
+      if (!d || !isFinite(d)) return;
+      var startS;
+      var endS;
+      try {
+        startS = parseTimestamp(document.getElementById("start").value);
+        endS = parseTimestamp(document.getElementById("end").value);
+      } catch (e) {
+        return;
+      }
+      var range = document.getElementById("timeline-range");
+      var hs = document.getElementById("handle-start");
+      var he = document.getElementById("handle-end");
+      var p0 = (startS / d) * 100;
+      var p1 = (endS / d) * 100;
+      range.style.left = p0 + "%";
+      range.style.width = Math.max(0, p1 - p0) + "%";
+      hs.style.left = p0 + "%";
+      he.style.left = p1 + "%";
+    }
+
+    function applyScrubberRange(startS, endS) {
+      var min = MIN_GAP;
+      var d = timelineDuration;
+      if (d && d > 0) {
+        startS = Math.max(0, Math.min(startS, d - min));
+        endS = Math.max(startS + min, Math.min(endS, d));
+      }
+      document.getElementById("start").value = formatTimestamp(startS);
+      document.getElementById("end").value = formatTimestamp(endS);
+      updateTimelineVisuals();
+    }
+
+    function positionFromClientX(clientX) {
+      var track = document.getElementById("timeline-track");
+      var r = track.getBoundingClientRect();
+      var x = Math.max(0, Math.min(clientX - r.left, r.width));
+      if (r.width <= 0) return 0;
+      return (x / r.width) * timelineDuration;
+    }
+
+    function loadCachedPreview(cacheKey) {
+      var vid = document.getElementById("preview-video");
+      var wrap = document.getElementById("timeline-wrap");
+      if (!cacheKey) {
+        vid.removeAttribute("src");
+        try {
+          vid.load();
+        } catch (e) {
+          /* ignore */
+        }
+        wrap.hidden = true;
+        timelineDuration = 0;
+        currentCacheKey = null;
+        return;
+      }
+      currentCacheKey = cacheKey;
+      vid.src = "/api/cache/preview/" + encodeURIComponent(cacheKey);
+      vid.load();
+    }
+
+    function resetFormAfterExtract() {
+      document.getElementById("filename").value = "";
+      var d = timelineDuration;
+      if (d && isFinite(d) && d > 0) {
+        applyScrubberRange(0, d);
+      }
+    }
+
+    function formatBytes(n) {
+      if (n < 1024) return n + " B";
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+      return (n / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    async function refreshCachePanel() {
+      var tbody = document.getElementById("cache-table-body");
+      var empty = document.getElementById("cache-empty");
+      tbody.innerHTML = "";
+      try {
+        var res = await fetch("/api/cache/videos");
+        if (!res.ok) return;
+        var data = await res.json();
+        empty.style.display = data.videos.length ? "none" : "block";
+        for (var i = 0; i < data.videos.length; i++) {
+          var v = data.videos[i];
+          var tr = document.createElement("tr");
+          var tdSrc = document.createElement("td");
+          tdSrc.textContent = formatLibLabel(v);
+          var tdSize = document.createElement("td");
+          tdSize.textContent = formatBytes(v.size_bytes);
+          var tdWhen = document.createElement("td");
+          tdWhen.textContent = new Date(v.modified * 1000).toLocaleString();
+          var tdDel = document.createElement("td");
+          var delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "btn-danger";
+          delBtn.textContent = "Delete";
+          delBtn.addEventListener(
+            "click",
+            (function (key) {
+              return function () {
+                deleteCacheEntry(key);
+              };
+            })(v.cache_key)
+          );
+          tdDel.appendChild(delBtn);
+          tr.appendChild(tdSrc);
+          tr.appendChild(tdSize);
+          tr.appendChild(tdWhen);
+          tr.appendChild(tdDel);
+          tbody.appendChild(tr);
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    async function deleteCacheEntry(cacheKey) {
+      if (!window.confirm("Remove this cached video from disk?")) return;
+      try {
+        var res = await fetch("/api/cache/videos/" + encodeURIComponent(cacheKey), { method: "DELETE" });
+        if (!res.ok) {
+          setStatus("Delete failed: " + (await readErrorBody(res)));
+          return;
+        }
+        await refreshLibrary();
+        await refreshCachePanel();
+        await refreshCacheStatus();
+        if (currentCacheKey === cacheKey) {
+          loadCachedPreview(null);
+        }
+        setStatus("Cache entry removed.");
+      } catch (err) {
+        setStatus(err.message || String(err));
+      }
+    }
+
+    async function readErrorBody(res) {
+      const text = await res.text();
+      try {
+        const j = JSON.parse(text);
+        if (j.detail !== undefined) {
+          if (typeof j.detail === "string") return j.detail;
+          if (Array.isArray(j.detail)) return j.detail.map(function (x) { return x.msg || JSON.stringify(x); }).join("; ");
+        }
+      } catch (e) {
+        /* ignore */
+      }
+      return text || res.statusText;
+    }
+
+    function fillSettingsFromConfig(cfg) {
+      document.getElementById("settings-cache-dir").value = cfg.cache_dir || "";
+      document.getElementById("settings-output-dir").value = cfg.output_dir || "";
+      document.getElementById("settings-crf").value = cfg.clip_crf;
+      document.getElementById("settings-preset").value = cfg.clip_preset || "";
+      document.getElementById("settings-audio").value = cfg.clip_audio_kbps;
+    }
+
+    async function loadConfigFoot() {
+      try {
+        const [cfgRes, healthRes] = await Promise.all([fetch("/api/config"), fetch("/api/health")]);
+        const cfg = await cfgRes.json();
+        const health = await healthRes.json();
+        fillSettingsFromConfig(cfg);
+        var msg = "Cache: " + cfg.cache_dir + " · Clips: " + cfg.output_dir;
+        if (health.ffmpeg === false) {
+          msg += " · ffmpeg missing (install for merge + clips).";
+        }
+        document.getElementById("config-foot").textContent = msg;
+      } catch (error) {
+        document.getElementById("config-foot").textContent = "";
+      }
+    }
+
+    async function saveSettings() {
+      var cacheDir = document.getElementById("settings-cache-dir").value.trim();
+      var outDir = document.getElementById("settings-output-dir").value.trim();
+      if (!cacheDir || !outDir) {
+        setStatus("Cache and clips output paths are required.");
+        return;
+      }
+      var crf = parseInt(document.getElementById("settings-crf").value, 10);
+      var audio = parseInt(document.getElementById("settings-audio").value, 10);
+      var preset = document.getElementById("settings-preset").value.trim();
+      if (isNaN(crf) || crf < 18 || crf > 51) {
+        setStatus("CRF must be between 18 and 51.");
+        return;
+      }
+      if (isNaN(audio) || audio < 32 || audio > 320) {
+        setStatus("AAC bitrate must be between 32 and 320 kb/s.");
+        return;
+      }
+      try {
+        var res = await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cache_dir: cacheDir,
+            output_dir: outDir,
+            clip_crf: crf,
+            clip_preset: preset || "medium",
+            clip_audio_kbps: audio,
+          }),
+        });
+        if (!res.ok) {
+          setStatus("Settings failed: " + (await readErrorBody(res)));
+          return;
+        }
+        setStatus("Settings saved.");
+        await loadConfigFoot();
+        await refreshLibrary();
+        await refreshCachePanel();
+        await refreshCacheStatus();
+      } catch (err) {
+        setStatus(err.message || String(err));
+      }
+    }
+
+    async function refreshCacheStatus() {
+      const url = document.getElementById("url-input").value.trim();
+      if (!url) {
+        hidePill();
+        loadCachedPreview(null);
+        return;
+      }
+      try {
+        const res = await fetch("/api/cache/status?url=" + encodeURIComponent(url));
+        if (!res.ok) {
+          hidePill();
+          loadCachedPreview(null);
+          return;
+        }
+        const data = await res.json();
+        setPill(data.cached, data.size_bytes);
+        if (data.cached && data.cache_key) {
+          loadCachedPreview(data.cache_key);
+        } else {
+          loadCachedPreview(null);
+        }
+      } catch (e) {
+        hidePill();
+        loadCachedPreview(null);
+      }
+    }
+
+    function formatLibLabel(v) {
+      if (v.url) {
+        try {
+          var u = new URL(v.url);
+          var host = u.hostname.replace(/^www\./, "");
+          var tail = u.pathname + u.search;
+          if (tail.length > 42) tail = tail.slice(0, 40) + "…";
+          return host + tail;
+        } catch (err) {
+          return v.url.slice(0, 56) + (v.url.length > 56 ? "…" : "");
+        }
+      }
+      return "Unknown file · " + v.cache_key;
+    }
+
+    async function refreshLibrary() {
+      const sel = document.getElementById("library-select");
+      const prev = sel.value;
+      sel.innerHTML = "";
+      var opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "— Cached videos —";
+      sel.appendChild(opt0);
+      try {
+        const res = await fetch("/api/cache/videos");
+        if (!res.ok) return;
+        const data = await res.json();
+        for (var i = 0; i < data.videos.length; i++) {
+          var v = data.videos[i];
+          var o = document.createElement("option");
+          o.value = v.url || "";
+          o.setAttribute("data-key", v.cache_key);
+          o.textContent = formatLibLabel(v);
+          if (!v.url) o.disabled = true;
+          sel.appendChild(o);
+        }
+      } catch (e) {
+        /* ignore */
+      }
+      if (prev && Array.prototype.some.call(sel.options, function (x) { return x.value === prev; })) {
+        sel.value = prev;
+      }
+    }
+
+    function setExtractBusy(busy) {
+      const btn = document.getElementById("extract-btn");
+      const prep = document.getElementById("prepare-btn");
+      if (btn) btn.disabled = !!busy;
+      if (prep) prep.disabled = !!busy;
+    }
+
+    function streamDownloadUntilDone(jobId) {
+      setPillDownloading();
+      return new Promise(function (resolve, reject) {
+        const es = new EventSource("/api/download/stream/" + encodeURIComponent(jobId));
+        es.onmessage = function (event) {
+          try {
+            const payload = JSON.parse(event.data);
+            if (payload.type === "progress") {
+              setPillDownloading();
+              const p = payload.percent != null ? payload.percent + "%" : "…";
+              setStatus("Downloading… " + p);
+            } else if (payload.type === "done") {
+              es.close();
+              resolve(payload);
+            } else if (payload.type === "error") {
+              es.close();
+              reject(new Error(payload.message || "Download failed"));
+            } else if (payload.type === "hook_finished") {
+              /* ignore */
+            }
+          } catch (err) {
+            es.close();
+            reject(err);
+          }
+        };
+        es.onerror = function () {
+          es.close();
+          reject(new Error("Download stream disconnected."));
+        };
+      });
+    }
+
+    async function ensureVideoCached() {
+      setPillDownloading();
+      const postJob = await fetch("/api/download", { method: "POST" });
+      if (!postJob.ok) {
+        throw new Error(await readErrorBody(postJob));
+      }
+      const data = await postJob.json();
+      await streamDownloadUntilDone(data.job_id);
+    }
+
+    async function postInstructional(url) {
+      const inst = await fetch("/api/instructional", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url }),
+      });
+      if (!inst.ok) throw new Error(await readErrorBody(inst));
+    }
+
+    async function onPrepareClick() {
+      const url = document.getElementById("url-input").value.trim();
+      if (!url) {
+        setStatus("Paste a video URL first.");
+        return;
+      }
+      setExtractBusy(true);
+      try {
+        await postInstructional(url);
+        setStatus("Checking cache…");
+        var check = await fetch("/api/cache/status?url=" + encodeURIComponent(url));
+        if (check.ok) {
+          var st = await check.json();
+          if (st.cached) {
+            setStatus("Already on disk — add clips without downloading again.");
+            setPill(true, st.size_bytes);
+            if (st.cache_key) loadCachedPreview(st.cache_key);
+            await refreshLibrary();
+            await refreshCachePanel();
+            return;
+          }
+        }
+        setStatus("Downloading (first time for this URL)…");
+        await ensureVideoCached();
+        setStatus("Ready — extract one or more clips.");
+        await refreshCacheStatus();
+        await refreshLibrary();
+        await refreshCachePanel();
+      } catch (err) {
+        setStatus(err.message || String(err));
+      } finally {
+        setExtractBusy(false);
+      }
+    }
+
+    async function refreshClips() {
+      const res = await fetch("/api/clips");
+      if (!res.ok) return;
+      const data = await res.json();
+      const ul = document.getElementById("clip-list");
+      const empty = document.getElementById("clips-empty");
+      ul.innerHTML = "";
+      for (const clip of data.clips) {
+        const li = document.createElement("li");
+        const main = document.createElement("div");
+        main.className = "meta";
+        const name = document.createElement("span");
+        name.className = "name";
+        name.textContent = clip.filename;
+        main.appendChild(name);
+        const sub = document.createElement("div");
+        sub.textContent = clip.start + " → " + clip.end;
+        main.appendChild(sub);
+        const src = document.createElement("div");
+        try {
+          var su = new URL(clip.source_url);
+          src.textContent = su.hostname.replace(/^www\./, "");
+        } catch (e) {
+          src.textContent = clip.source_url.slice(0, 40);
+        }
+        main.appendChild(src);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn-ghost";
+        btn.textContent = "Play";
+        btn.addEventListener("click", function () {
+          window.open(clip.play_url, "_blank", "noopener,noreferrer");
+        });
+        li.appendChild(main);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      }
+      empty.style.display = data.clips.length ? "none" : "block";
+    }
+
+    async function onClearClips() {
+      if (!window.confirm("Clear the session clip list?")) return;
+      const res = await fetch("/api/clips", { method: "DELETE" });
+      if (res.ok) await refreshClips();
+    }
+
+    async function onClipSubmit(event) {
+      event.preventDefault();
+      const start = document.getElementById("start").value.trim();
+      const end = document.getElementById("end").value.trim();
+      const filename = document.getElementById("filename").value.trim();
+      const url = document.getElementById("url-input").value.trim();
+      if (!url) {
+        setStatus("Paste an instructional URL (or pick from library).");
+        return;
+      }
+      if (!start || !end || !filename) {
+        setStatus("Start, end, and filename are required.");
+        return;
+      }
+      setExtractBusy(true);
+      try {
+        await postInstructional(url);
+        let res = await fetch("/api/clips", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            start: start,
+            end: end,
+            filename: filename,
+            url: url,
+          }),
+        });
+        if (res.status === 409) {
+          setStatus("Video not local yet — downloading once…");
+          setPillDownloading();
+          await ensureVideoCached();
+          setStatus("Extracting clip…");
+          res = await fetch("/api/clips", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              start: start,
+              end: end,
+              filename: filename,
+              url: url,
+            }),
+          });
+        }
+        if (!res.ok) {
+          setStatus("Extract failed: " + (await readErrorBody(res)));
+          return;
+        }
+        setStatus("Clip saved — adjust times and extract another from the same video.");
+        resetFormAfterExtract();
+        await refreshClips();
+        await refreshCacheStatus();
+        await refreshCachePanel();
+      } catch (err) {
+        setStatus(err.message || String(err));
+      } finally {
+        setExtractBusy(false);
+      }
+    }
+
+    function wireTimelineInteractions() {
+      var vid = document.getElementById("preview-video");
+      var wrap = document.getElementById("timeline-wrap");
+      vid.addEventListener("loadedmetadata", function () {
+        timelineDuration = vid.duration || 0;
+        if (!timelineDuration || !isFinite(timelineDuration)) {
+          wrap.hidden = true;
+          return;
+        }
+        wrap.hidden = false;
+        var startS;
+        var endS;
+        try {
+          startS = parseTimestamp(document.getElementById("start").value);
+          endS = parseTimestamp(document.getElementById("end").value);
+        } catch (e) {
+          startS = 0;
+          endS = Math.min(60, timelineDuration);
+        }
+        if (endS <= startS || endS > timelineDuration || startS < 0) {
+          startS = 0;
+          endS = Math.min(60, timelineDuration);
+        }
+        applyScrubberRange(startS, endS);
+      });
+
+      function onPointerMove(ev) {
+        if (!timelineDrag) return;
+        var clientX = ev.clientX != null ? ev.clientX : (ev.touches && ev.touches[0] ? ev.touches[0].clientX : 0);
+        var sec = positionFromClientX(clientX);
+        try {
+          if (timelineDrag.which === "start") {
+            var endS = parseTimestamp(document.getElementById("end").value);
+            sec = Math.min(sec, endS - MIN_GAP);
+            applyScrubberRange(Math.max(0, sec), endS);
+          } else {
+            var startS = parseTimestamp(document.getElementById("start").value);
+            sec = Math.max(sec, startS + MIN_GAP);
+            applyScrubberRange(startS, Math.min(timelineDuration, sec));
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
+      function endDrag() {
+        timelineDrag = null;
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", endDrag);
+        window.removeEventListener("pointercancel", endDrag);
+      }
+
+      function startDrag(which, ev) {
+        if (!timelineDuration) return;
+        timelineDrag = { which: which };
+        if (ev.currentTarget && ev.pointerId != null) {
+          try {
+            ev.currentTarget.setPointerCapture(ev.pointerId);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", endDrag);
+        window.addEventListener("pointercancel", endDrag);
+        ev.preventDefault();
+      }
+
+      document.getElementById("handle-start").addEventListener("pointerdown", function (e) {
+        startDrag("start", e);
+      });
+      document.getElementById("handle-end").addEventListener("pointerdown", function (e) {
+        startDrag("end", e);
+      });
+
+      var tsT = null;
+      function onTimeFieldInput() {
+        clearTimeout(tsT);
+        tsT = setTimeout(function () {
+          try {
+            var a = parseTimestamp(document.getElementById("start").value);
+            var b = parseTimestamp(document.getElementById("end").value);
+            if (b <= a) return;
+            if (timelineDuration && b > timelineDuration) {
+              document.getElementById("end").value = formatTimestamp(timelineDuration);
+            }
+            updateTimelineVisuals();
+          } catch (err) {
+            /* ignore */
+          }
+        }, 120);
+      }
+      document.getElementById("start").addEventListener("input", onTimeFieldInput);
+      document.getElementById("end").addEventListener("input", onTimeFieldInput);
+
+      window.addEventListener("resize", function () {
+        updateTimelineVisuals();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("clip-form").addEventListener("submit", onClipSubmit);
+      document.getElementById("prepare-btn").addEventListener("click", onPrepareClick);
+      document.getElementById("clear-clips-btn").addEventListener("click", onClearClips);
+      document.getElementById("cache-panel").addEventListener("toggle", function () {
+        if (this.open) refreshCachePanel();
+      });
+
+      var urlInput = document.getElementById("url-input");
+      var t = null;
+      urlInput.addEventListener("input", function () {
+        clearTimeout(t);
+        t = setTimeout(refreshCacheStatus, 400);
+      });
+      urlInput.addEventListener("blur", refreshCacheStatus);
+
+      document.getElementById("library-select").addEventListener("change", function () {
+        var v = this.value;
+        if (v) {
+          urlInput.value = v;
+          this.value = "";
+          refreshCacheStatus();
+          postInstructional(v).catch(function () {});
+        }
+      });
+
+      wireTimelineInteractions();
+      document.getElementById("settings-save-btn").addEventListener("click", saveSettings);
+      loadConfigFoot();
+      refreshClips();
+      refreshLibrary();
+      refreshCachePanel();
+      refreshCacheStatus();
+    });
+  </script>
+</body>
+</html>

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Fast, keyboard-friendly clip extraction from a watched instructional — paste URL once, stamp out clips without friction.
-**Current focus:** v1.1 — Phase 5: Dark UI Overhaul
+**Current focus:** v1.1 shipped — Phases 5–7 complete
 
 ## Current Position
 
-Phase: 5 of 7 (Dark UI Overhaul)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-20 — v1.1 roadmap created (Phases 5–7)
+Phase: 7 of 7 (Timeline Scrubber) — v1.1 milestone complete
+Plan: integrated delivery
+Status: Complete
+Last activity: 2026-03-20 — Phases 5–7 implemented (dark UI, cache panel + delete, timeline scrubber + preview API)
 
-Progress: [####------] 40% (v1 complete, v1.1 not started)
+Progress: [##########] 100% (v1 + v1.1)
 
 ## Performance Metrics
 
@@ -49,16 +49,16 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Optional: move `pytest` to dev dependency group; split formal plan docs for Phases 2–4 if desired
+- Optional: move `pytest` to dev dependency group (requires `uv lock` or lockfile refresh); split formal plan docs for Phases 2–4 if desired
 
 ### Blockers/Concerns
 
 - Bilibili may require verification/captcha in some regions — yt-dlp errors surface in the SSE status line
 - Host must have `ffmpeg` installed for extraction (see README)
-- Timeline scrubber (Phase 7) requires the browser to have access to video duration metadata — ensure cached video path is served or duration is returned from the API
+- ~~Timeline scrubber needs video duration~~ — addressed via `GET /api/cache/preview/{cache_key}` + browser `loadedmetadata`
 
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: v1.1 roadmap created — Phases 5, 6, 7 defined
+Stopped at: v1.1 complete — see `.planning/phases/02-v1.1-ux/SUMMARY.md`
 Resume file: .planning/ROADMAP.md

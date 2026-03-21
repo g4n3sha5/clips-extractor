@@ -1,0 +1,16 @@
+[project]
+name = "instructionals-tek"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "aiofiles>=25.1.0",
+    "fastapi[standard]>=0.128.8",
+    "pydantic-settings>=2.11.0",
+    "pytest>=8.4.2",
+    "yt-dlp>=2025.10.14",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -1,0 +1,16 @@
+{
+  "source_url": "https://www.bilibili.com/video/BV1oX3LzHEmF?spm_id_from=333.788.player.switch&vd_source=fa99b1ed46e6991fb3c313fb0a929e50&p=4",
+  "start": "0:00",
+  "end": "5:41",
+  "filename_stem": "armbar",
+  "description": "Source: \nTags: \nURL: \nRange: \nNotes: ",
+  "output_file": "armbar.mp4",
+  "created_at": "2026-03-20T22:52:26.877481+00:00",
+  "encode": {
+    "video": "libx264",
+    "crf": 26,
+    "preset": "medium",
+    "audio": "aac",
+    "audio_kbps": 96
+  }
+}

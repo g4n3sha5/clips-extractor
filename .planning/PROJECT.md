@@ -16,28 +16,28 @@ Fast, keyboard-friendly clip extraction from a watched instructional — paste U
 
 ### Active
 
-- [ ] User can set a "current instructional" URL (YouTube or Bilibili)
-- [ ] User inputs start/end timestamps and a filename to extract a clip
-- [ ] Tool downloads video via yt-dlp at 720p, cached by URL (skip re-download if cached)
-- [ ] Tool cuts clip using ffmpeg -c copy, outputs <filename>.mp4 to user-chosen folder
-- [ ] Description field with auto-suggest template (source, tags, url, range, notes) — multiline, freeform
-- [ ] Session clip list shows all clips extracted from the current instructional, with filename, range, and play button
-- [ ] Hidden JSON metadata stored next to each clip file (not visible in UI)
-- [ ] User-chosen output directory (configured once)
-- [ ] Form is keyboard-friendly and fast
+- [x] User can set a "current instructional" URL (YouTube or Bilibili)
+- [x] User inputs start/end timestamps and a filename to extract a clip (timeline scrubber optional)
+- [x] Tool downloads video via yt-dlp at 720p, cached by URL (skip re-download if cached)
+- [x] Tool cuts clip using ffmpeg (re-encode to H.264 + AAC per config), outputs `<filename>.mp4` to output dir
+- [x] Description field with auto-suggest template (source, tags, url, range, notes) — multiline, freeform
+- [x] Session clip list shows clips with filename, range, and play button
+- [x] Hidden JSON metadata stored next to each clip file (not visible in UI)
+- [x] User-chosen output directory (via config API / `~/.drillclips/config.json`)
+- [x] Form is keyboard-friendly and fast
 
 ### Out of Scope
 
 - JSON metadata exposed in UI — metadata is internal only
 - Re-download when cache exists — cache hit always skips download
-- Complex UI, thumbnails, or video preview in browser — keep it minimal
+- Heavy video editing UI — timeline scrubber for range only; no in-player preview requirement beyond duration
 - Mobile / non-local access — local use only
 - Qualities above 720p — 720p is the cap
 
 ## Context
 
-- yt-dlp handles both YouTube and Bilibili; needs to be installed on the system
-- ffmpeg required for cutting; -c copy avoids re-encoding (fast, lossless cut)
+- yt-dlp handles both YouTube and Bilibili (Python dependency)
+- ffmpeg required for merge (download) and clip extraction (re-encode for smaller files — see README defaults)
 - Cache lives in a configurable cache dir (default: ~/.drillclips/cache/)
 - Hidden metadata: <filename>.json next to <filename>.mp4
 - Python backend (FastAPI) serves a simple browser UI
@@ -46,31 +46,29 @@ Fast, keyboard-friendly clip extraction from a watched instructional — paste U
 ## Constraints
 
 - **Tech stack**: Python + FastAPI backend, minimal HTML/JS frontend (no heavy frameworks)
-- **Dependencies**: yt-dlp and ffmpeg must be installed on the host system
+- **Dependencies**: yt-dlp (Python dep) and ffmpeg on `PATH`
 - **Download quality**: 720p max, no higher
-- **Cut method**: ffmpeg -c copy only (no re-encoding)
+- **Cut method**: ffmpeg re-encode (H.264 + AAC) with configurable CRF/preset — smaller files than stream-copy
 - **Scope**: Local tool, single user, no auth
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Python + FastAPI | yt-dlp is Python-native; minimal server overhead | — Pending |
-| Cache by URL | Avoid redundant downloads of same instructional | — Pending |
-| ffmpeg -c copy | Speed and quality — no re-encoding needed for clip extraction | — Pending |
-| JSON metadata hidden | User wants human-readable descriptions, not structured UI | — Pending |
-| 720p cap | Sufficient quality for instructionals, keeps files manageable | — Pending |
+| Python + FastAPI | yt-dlp is Python-native; minimal server overhead | Shipped |
+| Cache by URL | Avoid redundant downloads of same instructional | Shipped |
+| ffmpeg re-encode for clips | Much smaller clip files than `-c copy` for typical instructionals | Shipped (defaults in config) |
+| JSON metadata hidden | Human-readable descriptions in sidecar, not structured UI | Shipped |
+| 720p cap | Sufficient quality; keeps downloads manageable | Shipped |
 
-## Current Milestone: v1.1 UX Overhaul
+## Milestone: v1.1 UX Overhaul — **complete**
 
-**Goal:** Replace the v1 form UI with a dark, minimal interface featuring a timeline scrubber for clip selection, cache visibility, and a clean clip list.
+**Shipped (2026-03-20):**
+- Dark minimal UI; post-extract reset (filename + description template + scrubber range)
+- Cache pill: Cached / Downloading / Not cached; cache library panel with delete
+- Timeline scrubber + `GET /api/cache/preview/{cache_key}` for duration
 
-**Target features:**
-- Timeline scrubber with draggable in/out handles for setting clip range
-- Cache status badge on URL field (cached / downloading / not cached)
-- Cache management panel listing all cached videos with size, date, and delete
-- Dark minimal UI redesign (complete visual overhaul)
-- Streamlined single-clip workflow: scrub → name → cut → appears in list → reset
+**Next (v2, deferred):** See `.planning/REQUIREMENTS.md` — e.g. configurable cache dir in UI, session persistence, optional UX polish.
 
 ---
-*Last updated: 2026-03-20 — milestone v1.1 started*
+*Last updated: 2026-03-20 — v1.1 complete*
