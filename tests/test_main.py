@@ -29,11 +29,12 @@ def test_main_routes_and_static(tmp_path, monkeypatch):
 
 def test_lifespan_creates_directories(tmp_path, monkeypatch):
     output_dir = tmp_path / "clips_out"
+    desc_dir = tmp_path / "clips_out" / "descriptions"
     cache_dir = tmp_path / "cache_out"
     from main import app
     monkeypatch.setattr(
         "main.load_settings",
-        lambda: config.Settings(cache_dir=cache_dir, output_dir=output_dir),
+        lambda: config.Settings(cache_dir=cache_dir, output_dir=output_dir, descriptions_dir=desc_dir),
     )
 
     with TestClient(app):
@@ -41,6 +42,7 @@ def test_lifespan_creates_directories(tmp_path, monkeypatch):
 
     assert Path(cache_dir).exists()
     assert Path(output_dir).exists()
+    assert Path(desc_dir).exists()
 
 
 def test_clips_list_empty(tmp_path, monkeypatch):
@@ -54,30 +56,43 @@ def test_clips_list_empty(tmp_path, monkeypatch):
     assert response.json() == {"clips": []}
 
 
-def test_extract_without_cache_returns_409(tmp_path, monkeypatch):
+def test_extract_without_cache_queues_clip(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
 
     def fake_load() -> Settings:
-        return Settings(cache_dir=tmp_path / "cache", output_dir=tmp_path / "out")
+        return Settings(
+            cache_dir=tmp_path / "cache",
+            output_dir=tmp_path / "out",
+            descriptions_dir=tmp_path / "out" / "descriptions",
+        )
 
     monkeypatch.setattr(config, "load_settings", fake_load)
     reset_session()
     from main import app
 
     client = TestClient(app)
-    assert client.post("/api/instructional", json={"url": "https://example.com/watch?v=1"}).status_code == 200
+    url = "https://example.com/watch?v=1"
+    assert client.post("/api/instructional", json={"url": url}).status_code == 200
     response = client.post(
         "/api/clips",
         json={"start": "0", "end": "1", "filename": "x"},
     )
-    assert response.status_code == 409
+    assert response.status_code == 202
+    body = response.json()
+    assert body["status"] == "queued"
+    assert body["position"] == 1
+    assert client.get("/api/clips/queue", params={"url": url}).json()["pending"] == 1
 
 
 def test_cache_endpoints(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
 
     def fake_load() -> Settings:
-        return Settings(cache_dir=tmp_path / "cache", output_dir=tmp_path / "out")
+        return Settings(
+            cache_dir=tmp_path / "cache",
+            output_dir=tmp_path / "out",
+            descriptions_dir=tmp_path / "out" / "descriptions",
+        )
 
     monkeypatch.setattr(config, "load_settings", fake_load)
     monkeypatch.setattr("routers.cache.load_settings", fake_load)
@@ -93,13 +108,48 @@ def test_cache_endpoints(tmp_path, monkeypatch):
     )
 
 
+def test_cached_videos_list_includes_title(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir(parents=True)
+
+    def fake_load() -> Settings:
+        return Settings(
+            cache_dir=cache_dir,
+            output_dir=tmp_path / "out",
+            descriptions_dir=tmp_path / "out" / "descriptions",
+        )
+
+    monkeypatch.setattr(config, "load_settings", fake_load)
+    monkeypatch.setattr("routers.cache.load_settings", fake_load)
+    from services.cache import save_url_registry_entry, save_video_title, url_cache_key
+
+    url = "https://www.youtube.com/watch?v=abc"
+    key = url_cache_key(url)
+    (cache_dir / f"{key}.mp4").write_bytes(b"fakevid")
+    save_url_registry_entry(cache_dir, url)
+    save_video_title(cache_dir, url, "Knee Cut Defense")
+
+    from main import app
+
+    client = TestClient(app)
+    videos = client.get("/api/cache/videos").json()["videos"]
+    assert len(videos) == 1
+    assert videos[0]["title"] == "Knee Cut Defense"
+    assert videos[0]["url"] == url
+
+
 def test_cache_preview_and_delete(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir(parents=True)
 
     def fake_load() -> Settings:
-        return Settings(cache_dir=cache_dir, output_dir=tmp_path / "out")
+        return Settings(
+            cache_dir=cache_dir,
+            output_dir=tmp_path / "out",
+            descriptions_dir=tmp_path / "out" / "descriptions",
+        )
 
     monkeypatch.setattr(config, "load_settings", fake_load)
     monkeypatch.setattr("routers.cache.load_settings", fake_load)

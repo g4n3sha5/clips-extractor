@@ -47,6 +47,10 @@ Recent decisions affecting current work:
 - Pre-roadmap: Use asyncio.to_thread() for yt-dlp to avoid blocking the FastAPI event loop
 - Pre-roadmap: Always use asyncio.create_subprocess_exec with arg list (never shell=True) for ffmpeg
 
+### Roadmap Evolution
+
+- Phase 8 added: Queue clips while downloading, choose videos from local files, optional descriptions toggle
+
 ### Pending Todos
 
 - Optional: move `pytest` to dev dependency group (requires `uv lock` or lockfile refresh); split formal plan docs for Phases 2–4 if desired

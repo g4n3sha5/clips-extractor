@@ -9,7 +9,8 @@ from routers.config import router
 
 
 def build_client(tmp_path, monkeypatch):
-    save_settings(Settings(output_dir=tmp_path / "clips"))
+    clips = tmp_path / "clips"
+    save_settings(Settings(output_dir=clips, descriptions_dir=clips / "descriptions"))
     app = FastAPI()
     app.include_router(router, prefix="/api")
     return TestClient(app)
@@ -23,9 +24,29 @@ def test_get_config_returns_expected_keys(tmp_path, monkeypatch):
     payload = response.json()
     assert "cache_dir" in payload
     assert "output_dir" in payload
+    assert "descriptions_dir" in payload
     assert payload["clip_crf"] == 26
     assert payload["clip_preset"] == "medium"
     assert payload["clip_audio_kbps"] == 96
+    assert payload["bilibili_use_login"] is False
+    assert payload["proxy_url"] is None
+
+
+def test_post_config_proxy_and_bilibili_login(tmp_path, monkeypatch) -> None:
+    client = build_client(tmp_path, monkeypatch)
+    response = client.post(
+        "/api/config",
+        json={
+            "proxy_url": "http://127.0.0.1:7890",
+            "bilibili_use_login": True,
+            "bilibili_cookies_browser": "firefox",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["proxy_url"] == "http://127.0.0.1:7890"
+    assert payload["bilibili_use_login"] is True
+    assert payload["bilibili_cookies_browser"] == "firefox"
 
 
 def test_post_config_updates_output_dir(tmp_path, monkeypatch):

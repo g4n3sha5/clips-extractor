@@ -1,0 +1,12 @@
+{
+  "cache_dir": "cache",
+  "output_dir": "clips",
+  "descriptions_dir": "clips/descriptions",
+  "clip_crf": 26,
+  "clip_preset": "medium",
+  "clip_audio_kbps": 96,
+  "proxy_url": null,
+  "bilibili_use_login": false,
+  "bilibili_cookies_browser": "firefox",
+  "bilibili_cookies_file": null
+}

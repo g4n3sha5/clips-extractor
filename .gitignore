@@ -1,0 +1,9 @@
+.DS_Store
+config.json
+session_clips.json
+bilibili_cookies.txt
+cache/
+clips/
+__pycache__/
+.pytest_cache/
+.venv/

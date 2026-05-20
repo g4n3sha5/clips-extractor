@@ -4,25 +4,23 @@ import urllib.parse
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from config import load_settings
-from models import ClipExtractRequest, ClipItem, ClipListResponse, SessionClearResponse
-from services.cache import cached_video_path, get_video_title, is_valid_cache_file
-from services import clip as clip_service
-from services.session import add_session_clip, clear_session_clips, get_instructional_url, get_session_clips
+from models import (
+    ClipExtractRequest,
+    ClipItem,
+    ClipListResponse,
+    ClipQueuedResponse,
+    SessionClearResponse,
+)
+from services.cache import cached_video_path, is_valid_cache_file
+from services.clip_queue import enqueue, pending_count
+from services.download import is_download_in_progress
+from services.extract_clip import extract_clip_request
+from services.session import clear_session_clips, get_instructional_url, get_session_clips
 
 router = APIRouter()
-
-
-def _safe_output_basename(name: str) -> str:
-    base = Path(name.strip()).name
-    if base.lower().endswith(".mp4"):
-        stem = base[:-4]
-    else:
-        stem = base
-    stem = clip_service.sanitize_filename_stem(stem)
-    return f"{stem}.mp4"
 
 
 @router.get("/clips", response_model=ClipListResponse)
@@ -37,7 +35,7 @@ def delete_session_clips() -> SessionClearResponse:
 
 
 @router.post("/clips", response_model=ClipItem)
-async def extract_clip(body: ClipExtractRequest) -> ClipItem:
+async def extract_clip(body: ClipExtractRequest):
     url = (body.url or "").strip() or get_instructional_url()
     if not url:
         raise HTTPException(status_code=400, detail="No instructional URL. Load a URL first.")
@@ -45,68 +43,30 @@ async def extract_clip(body: ClipExtractRequest) -> ClipItem:
     settings = load_settings()
     cached = cached_video_path(settings.cache_dir, url)
     if not is_valid_cache_file(cached):
-        raise HTTPException(
-            status_code=409,
-            detail="Video is not cached yet. Click Load and wait for download to finish.",
+        position = enqueue(url, body.model_dump())
+        downloading = is_download_in_progress(url)
+        msg = (
+            "Clip queued — will extract when the download finishes."
+            if downloading
+            else "Clip queued — start or wait for the video download, then it will extract automatically."
         )
+        payload = ClipQueuedResponse(position=position, message=msg)
+        return JSONResponse(status_code=202, content=payload.model_dump())
 
     try:
-        start_sec = clip_service.parse_timestamp(body.start)
-        end_sec = clip_service.parse_timestamp(body.end)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
-
-    out_name = _safe_output_basename(body.filename)
-    output_mp4 = settings.output_dir / out_name
-
-    try:
-        await clip_service.extract_clip_encoded(
-            cached,
-            output_mp4,
-            start_sec,
-            end_sec,
-            crf=settings.clip_crf,
-            preset=settings.clip_preset,
-            audio_kbps=settings.clip_audio_kbps,
-        )
+        return await extract_clip_request(body)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
-    encode_meta = clip_service.encode_options_for_sidecar(
-        crf=settings.clip_crf,
-        preset=settings.clip_preset,
-        audio_kbps=settings.clip_audio_kbps,
-    )
-    description = clip_service.format_clip_description(
-        video_title=get_video_title(settings.cache_dir, url),
-        start=body.start.strip(),
-        end=body.end.strip(),
-        fallback_url=url,
-    )
-    meta = clip_service.build_metadata_sidecar(
-        source_url=url,
-        start=body.start.strip(),
-        end=body.end.strip(),
-        filename_stem=Path(out_name).stem,
-        description=description,
-        output_filename=out_name,
-        encode=encode_meta,
-    )
-    json_path = output_mp4.with_suffix(".json")
-    clip_service.write_sidecar_json(json_path, meta)
 
-    play_path = f"/api/clip-file/{urllib.parse.quote(out_name)}"
-    item = {
-        "filename": out_name,
-        "start": body.start.strip(),
-        "end": body.end.strip(),
-        "source_url": url,
-        "play_url": play_path,
-    }
-    add_session_clip(item)
-    return ClipItem(**item)
+@router.get("/clips/queue")
+def clip_queue_status(url: str) -> dict:
+    """How many clips are waiting for this URL's cache file."""
+    if not url.strip():
+        raise HTTPException(status_code=400, detail="url query parameter required")
+    return {"pending": pending_count(url), "downloading": is_download_in_progress(url)}
 
 
 @router.get("/clip-file/{filename}")

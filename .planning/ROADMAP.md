@@ -118,3 +118,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. Dark UI Overhaul | 1/1 | Complete | 2026-03-20 |
 | 6. Cache Visibility | integrated | Complete | 2026-03-20 |
 | 7. Timeline Scrubber | integrated | Complete | 2026-03-20 |
+
+### Phase 8: Queue clips while downloading, choose videos from local files, optional descriptions toggle
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 8 to break down)

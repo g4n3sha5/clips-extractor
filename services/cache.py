@@ -8,8 +8,11 @@ from typing import Any
 
 
 def url_cache_key(url: str) -> str:
-    """Stable short key for cache filename (full URL hashed)."""
-    return hashlib.sha256(url.strip().encode("utf-8")).hexdigest()[:16]
+    """Stable short key for cache filename (canonical URL hashed)."""
+    from services.url_parse import canonical_instructional_url
+
+    normalized = canonical_instructional_url(url)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
 
 
 def cached_video_path(cache_dir: Path, url: str) -> Path:
@@ -53,7 +56,9 @@ def load_video_titles(cache_dir: Path) -> dict[str, str]:
 
 def save_video_title(cache_dir: Path, url: str, title: str) -> None:
     """Persist display title for a cached instructional (keyed by URL hash)."""
-    normalized = url.strip()
+    from services.url_parse import canonical_instructional_url
+
+    normalized = canonical_instructional_url(url)
     text = (title or "").strip()
     if not normalized or not text:
         return
@@ -69,7 +74,9 @@ def save_video_title(cache_dir: Path, url: str, title: str) -> None:
 
 def get_video_title(cache_dir: Path, url: str) -> str:
     """Return stored title for this URL, or empty string if unknown."""
-    normalized = url.strip()
+    from services.url_parse import canonical_instructional_url
+
+    normalized = canonical_instructional_url(url)
     if not normalized:
         return ""
     key = url_cache_key(normalized)
@@ -96,7 +103,9 @@ def load_url_registry(cache_dir: Path) -> dict[str, str]:
 
 def save_url_registry_entry(cache_dir: Path, url: str) -> None:
     """Record which URL owns a cache file (idempotent merge)."""
-    normalized = url.strip()
+    from services.url_parse import canonical_instructional_url
+
+    normalized = canonical_instructional_url(url)
     if not normalized:
         return
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -114,16 +123,19 @@ def list_cached_videos(cache_dir: Path) -> list[dict[str, Any]]:
     if not cache_dir.is_dir():
         return []
     reg = load_url_registry(cache_dir)
+    titles = load_video_titles(cache_dir)
     items: list[dict[str, Any]] = []
     for mp4 in sorted(cache_dir.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True):
         if not is_valid_cache_file(mp4):
             continue
         key = mp4.stem
         st = mp4.stat()
+        title = titles.get(key) or None
         items.append(
             {
                 "cache_key": key,
                 "url": reg.get(key),
+                "title": title,
                 "size_bytes": st.st_size,
                 "modified": int(st.st_mtime),
             }
@@ -170,7 +182,9 @@ def delete_cached_video(cache_dir: Path, cache_key: str) -> bool:
 
 def cache_status_for_url(cache_dir: Path, url: str) -> dict[str, Any]:
     """Whether the URL has a local cache file and its size."""
-    normalized = url.strip()
+    from services.url_parse import canonical_instructional_url
+
+    normalized = canonical_instructional_url(url)
     if not normalized:
         return {"cached": False, "size_bytes": None, "cache_key": None}
     path = cached_video_path(cache_dir, normalized)

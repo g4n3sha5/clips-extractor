@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
     settings = load_settings()
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
     settings.output_dir.mkdir(parents=True, exist_ok=True)
+    settings.descriptions_dir.mkdir(parents=True, exist_ok=True)
     yield
 
 
@@ -32,3 +33,10 @@ app.include_router(clips_router.router, prefix="/api")
 
 # StaticFiles acts as a catch-all and should be mounted last.
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+DEFAULT_PORT = 3003
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="127.0.0.1", port=DEFAULT_PORT, reload=True)

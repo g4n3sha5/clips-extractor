@@ -24,17 +24,30 @@ def update_config(body: ConfigUpdate) -> ConfigResponse:
         updates["cache_dir"] = body.cache_dir
     if body.output_dir is not None:
         updates["output_dir"] = body.output_dir
+    if body.descriptions_dir is not None:
+        updates["descriptions_dir"] = body.descriptions_dir
     if body.clip_crf is not None:
         updates["clip_crf"] = body.clip_crf
     if body.clip_preset is not None:
         updates["clip_preset"] = body.clip_preset.strip() or settings.clip_preset
     if body.clip_audio_kbps is not None:
         updates["clip_audio_kbps"] = body.clip_audio_kbps
+    if body.proxy_url is not None:
+        p = body.proxy_url.strip() if isinstance(body.proxy_url, str) else ""
+        updates["proxy_url"] = p or None
+    if body.bilibili_use_login is not None:
+        updates["bilibili_use_login"] = body.bilibili_use_login
+    if body.bilibili_cookies_browser is not None:
+        b = body.bilibili_cookies_browser.strip() if body.bilibili_cookies_browser else None
+        updates["bilibili_cookies_browser"] = b or None
+    if body.bilibili_cookies_file is not None:
+        updates["bilibili_cookies_file"] = body.bilibili_cookies_file
     if updates:
         settings = settings.model_copy(update=updates)
         save_settings(settings)
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
     settings.output_dir.mkdir(parents=True, exist_ok=True)
+    settings.descriptions_dir.mkdir(parents=True, exist_ok=True)
     return settings
 
 

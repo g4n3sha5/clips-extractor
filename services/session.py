@@ -22,8 +22,10 @@ def get_instructional_url() -> Optional[str]:
 
 
 def set_instructional_url(url: str) -> None:
+    from services.url_parse import canonical_instructional_url
+
     global _current_url
-    normalized = url.strip()
+    normalized = canonical_instructional_url(url)
     _current_url = normalized
     _persist()
 

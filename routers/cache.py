@@ -34,6 +34,7 @@ def get_cached_videos() -> CachedVideosResponse:
             size_bytes=x["size_bytes"],
             modified=x["modified"],
             url=x.get("url"),
+            title=x.get("title"),
         )
         for x in raw
     ]

@@ -7,6 +7,8 @@ A local FastAPI app for downloading instructional videos once (cached), extracti
 - **Python** 3.9+
 - **`uv`** (recommended) or another way to install Python deps
 - **`ffmpeg`** on your `PATH` — **required** for (1) cutting clips and (2) **merging** separate video+audio streams when downloading (common on Bilibili / YouTube DASH). Example (macOS): `brew install ffmpeg`. The app shows a warning on load if `ffmpeg` is missing.
+- **YouTube / most URLs:** no account required (default).
+- **Bilibili:** public videos download without login. Multi-part links need **`?p=N`** (e.g. `?p=10`). Optional in **Settings**: proxy URL (VPN local port) and “Bilibili login” for members-only / region-locked videos. Space out downloads to avoid **412** rate limits.
 - **`yt-dlp`** is bundled as a Python dependency; the CLI is not required
 
 Install `uv` if needed:
@@ -32,17 +34,23 @@ uv sync
 ## Run the app
 
 ```bash
-uv run uvicorn main:app --reload
+uv run uvicorn main:app --reload --port 3003
 ```
 
-Open [http://localhost:8000](http://localhost:8000).
+Or (same default port):
+
+```bash
+uv run python main.py
+```
+
+Open [http://localhost:3003](http://localhost:3003).
 
 ### Workflow
 
-1. Paste a **YouTube or Bilibili** URL and click **Prepare video** (or use **Extract clip** — it will download on first use). Downloads happen **once** per URL at **up to 720p** into `~/.drillclips/cache/` (with live progress).
+1. Paste a **YouTube or Bilibili** URL and click **Prepare video** (or use **Extract clip** — it will download on first use). Downloads happen **once** per URL at **up to 720p** into `./cache/` (with live progress).
 2. Change **Start** / **End** (`0:30`, `1:05`, or `1:01:05`) — or use the **timeline scrubber** when the video is cached — set **filename**, and click **Extract clip** again — **no re-download** for the same URL. The JSON sidecar next to each clip stores the **video title** (from the download) and the **start–end range** only. After a successful extract, the **filename** field clears and the scrubber resets for the next clip.
 3. The **library** dropdown lists videos already cached on disk (URLs are stored in `url_registry.json` next to the `.mp4` files).
-4. Clips go to the **output directory** (default `./clips/`). Each clip is saved as **MP4 (libx264 CRF + AAC)**. Defaults aim for smaller files: **CRF 26**, **preset medium**, **96 kb/s** AAC — tune in `~/.drillclips/config.json` (`clip_crf`, `clip_preset`, `clip_audio_kbps`) or via `POST /api/config`.
+4. Clips go to the **output directory** (default `./clips/`). Each clip is saved as **MP4 (libx264 CRF + AAC)**. Tune encoding in **`config.json`** at the project root (`clip_crf`, `clip_preset`, `clip_audio_kbps`) or via **Settings** in the UI.
 5. **Clips this session** accumulates extractions until you **Clear list** or restart the server; switching URLs does not wipe the list.
 
 ## API (for debugging)
@@ -72,6 +80,7 @@ uv run pytest tests/ -v
 
 ## Files & config
 
-- **Cache:** `~/.drillclips/cache/<url-hash>.mp4`, `url_registry.json` (hash → URL), and `video_titles.json` (hash → title for clip sidecars)
-- **Config:** `~/.drillclips/config.json` (output/cache dirs, clip encoding options)
-- **Default clips folder:** `./clips/` (relative to the process working directory — run `uvicorn` from the project root)
+- **Cache:** `./cache/<url-hash>.mp4`, `url_registry.json`, `video_titles.json`
+- **Config:** `./config.json` (paths, encoding, optional proxy / Bilibili login) — copy from `config.example.json` to start fresh
+- **Session:** `./session_clips.json` (clip list until you clear it)
+- Run `uvicorn` from the **project root** so relative paths resolve correctly
