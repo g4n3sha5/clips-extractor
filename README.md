@@ -45,6 +45,16 @@ uv run python main.py
 
 Open [http://localhost:3003](http://localhost:3003).
 
+## Browser extension (Bilibili bypass)
+
+When server-side download fails (geo / 412 / login), use the **browser extension** in [`extension/`](extension/README.md):
+
+1. Run the app on port **3003** (above).
+2. Load the unpacked extension from `extension/` (Chrome: **Load unpacked**; Firefox: temporary add-on).
+3. On Bilibili or YouTube, mark **in/out** in the floating panel and **Export** — the extension records the segment (with audio on macOS via Web Audio) and sends it to `POST /api/clips/from-recording`.
+
+See [extension/README.md](extension/README.md) for install steps and audio troubleshooting.
+
 ### Workflow
 
 1. Paste a **YouTube or Bilibili** URL and click **Prepare video** (or use **Extract clip** — it will download on first use). Downloads happen **once** per URL at **up to 720p** into `./cache/` (with live progress).
@@ -64,6 +74,7 @@ Open [http://localhost:3003](http://localhost:3003).
 | `POST /api/download` | Start download job; returns `job_id` |
 | `GET /api/download/stream/{job_id}` | **SSE** download progress |
 | `POST /api/clips` | Extract clip (`start`, `end`, `filename`, optional `url`); sidecar description is auto: title + range |
+| `POST /api/clips/from-recording` | Import a browser-recorded segment (`multipart`: `file`, `filename`, `start`, `end`, `source_url`) |
 | `GET /api/clips` | Session clip list |
 | `GET /api/clip-file/{filename}` | Serve an extracted `.mp4` |
 | `GET /api/cache/status?url=` | Whether the URL is cached locally (+ size) |

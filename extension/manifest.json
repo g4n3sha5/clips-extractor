@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Drill Clip Extractor",
+  "version": "0.1.0",
+  "description": "Mark in/out on Bilibili or YouTube and send a clip to your local Drill Clip Extractor app.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Drill Clip Extractor"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "scripts": ["background/service-worker.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "drill-clip-extractor@local",
+      "strict_min_version": "115.0"
+    }
+  },
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://127.0.0.1:3003/*",
+    "http://localhost:3003/*",
+    "https://www.bilibili.com/*",
+    "https://www.youtube.com/*",
+    "https://youtu.be/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bilibili.com/*",
+        "https://www.youtube.com/*",
+        "https://youtu.be/*"
+      ],
+      "js": [
+        "lib/markers.js",
+        "lib/recording.js",
+        "content/content.js"
+      ],
+      "css": ["content/overlay.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

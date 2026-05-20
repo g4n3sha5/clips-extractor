@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Drill Clip Extractor</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+        margin: 12px;
+        min-width: 260px;
+        color: #0f172a;
+      }
+      label {
+        display: block;
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 12px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 10px;
+      }
+      button {
+        width: 100%;
+        border: 1px solid #1d4ed8;
+        background: #1d4ed8;
+        color: #fff;
+        border-radius: 6px;
+        padding: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #status {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #64748b;
+      }
+      #status.ok {
+        color: #15803d;
+      }
+      #status.err {
+        color: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="api-base">App URL</label>
+    <input id="api-base" type="text" value="http://127.0.0.1:3003" />
+    <button id="test" type="button">Test connection</button>
+    <p id="status">Open Bilibili or YouTube and use the floating panel.</p>
+    <script src="popup.js"></script>
+  </body>
+</html>

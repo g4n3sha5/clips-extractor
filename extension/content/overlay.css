@@ -1,0 +1,98 @@
+#drill-clips-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483646;
+  width: 300px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 13px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  padding: 12px;
+}
+
+#drill-clips-panel h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#drill-clips-panel .row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+#drill-clips-panel label {
+  flex: 0 0 52px;
+  color: #475569;
+  font-size: 12px;
+}
+
+#drill-clips-panel input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+#drill-clips-panel button {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#drill-clips-panel button.primary {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+  width: 100%;
+  padding: 8px;
+  font-weight: 600;
+}
+
+#drill-clips-panel button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+#drill-clips-panel .status {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #64748b;
+  min-height: 1.2em;
+}
+
+#drill-clips-panel .status.error {
+  color: #b91c1c;
+}
+
+#drill-clips-panel .status.ok {
+  color: #15803d;
+}
+
+#drill-clips-panel .status.warn {
+  color: #b45309;
+}
+
+#drill-clips-panel .toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: #64748b;
+}
