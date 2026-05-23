@@ -56,6 +56,10 @@ Plain `video.captureStream()` often records **video only** on Mac. This extensio
 - Keep the tab unmuted; don’t use Bluetooth output that blocks capture.
 - If it still fails, the page may block audio routing (rare on Bilibili/YouTube players).
 
+## Minimize / expand
+
+The panel can be collapsed to a small circular **DC** button in the bottom-right corner — click it to expand again. The minimize state is remembered **per host** (`chrome.storage.sync`), so YouTube starts **minimized by default** (less in the way of the player) while Bilibili starts **expanded**. Toggle once and your preference sticks for that site.
+
 ## Settings
 
 Extension popup → **App URL** (default `http://127.0.0.1:3003`). Stored in `chrome.storage.sync`.

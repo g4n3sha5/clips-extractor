@@ -14,6 +14,45 @@
   padding: 12px;
 }
 
+#drill-clips-panel .launcher {
+  display: none;
+}
+
+#drill-clips-panel.minimized {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#drill-clips-panel.minimized .panel-inner {
+  display: none;
+}
+
+#drill-clips-panel.minimized .launcher {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+}
+
+#drill-clips-panel.minimized .launcher:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 #drill-clips-panel h2 {
   margin: 0 0 8px;
   font-size: 14px;

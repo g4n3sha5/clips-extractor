@@ -1,5 +1,29 @@
 (function () {
   const PANEL_ID = "drill-clips-panel";
+  const HOST = location.hostname;
+  const STORAGE_KEY = `panelMinimized:${HOST}`;
+  const DEFAULT_MINIMIZED = /(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(HOST);
+
+  function loadMinimized() {
+    return new Promise((resolve) => {
+      try {
+        chrome.storage.sync.get(STORAGE_KEY, (stored) => {
+          const val = stored ? stored[STORAGE_KEY] : undefined;
+          resolve(val === undefined ? DEFAULT_MINIMIZED : !!val);
+        });
+      } catch {
+        resolve(DEFAULT_MINIMIZED);
+      }
+    });
+  }
+
+  function saveMinimized(minimized) {
+    try {
+      chrome.storage.sync.set({ [STORAGE_KEY]: !!minimized });
+    } catch {
+      /* ignore — storage may be unavailable */
+    }
+  }
 
   function findVideo() {
     const candidates = Array.from(document.querySelectorAll("video"));
@@ -22,42 +46,55 @@
     return t.replace(/[^\w.-]+/g, "_").slice(0, 48) || "clip";
   }
 
-  function buildPanel() {
+  async function buildPanel() {
     if (document.getElementById(PANEL_ID)) return;
 
     const panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML = `
-      <button type="button" class="toggle" title="Minimize">−</button>
-      <h2>Drill Clips</h2>
-      <div class="body">
-        <div class="row">
-          <label>In</label>
-          <input type="text" id="drill-in" placeholder="0:00" />
-          <button type="button" id="drill-mark-in" title="Use current video time">Mark</button>
+      <button type="button" class="launcher" title="Drill Clips — click to expand">DC</button>
+      <div class="panel-inner">
+        <button type="button" class="toggle" title="Minimize">−</button>
+        <h2>Drill Clips</h2>
+        <div class="body">
+          <div class="row">
+            <label>In</label>
+            <input type="text" id="drill-in" placeholder="0:00" />
+            <button type="button" id="drill-mark-in" title="Use current video time">Mark</button>
+          </div>
+          <div class="row">
+            <label>Out</label>
+            <input type="text" id="drill-out" placeholder="0:00" />
+            <button type="button" id="drill-mark-out" title="Use current video time">Mark</button>
+          </div>
+          <div class="row">
+            <label>Name</label>
+            <input type="text" id="drill-filename" />
+          </div>
+          <button type="button" class="primary" id="drill-export">Export to Drill Clips</button>
+          <div class="status" id="drill-status"></div>
         </div>
-        <div class="row">
-          <label>Out</label>
-          <input type="text" id="drill-out" placeholder="0:00" />
-          <button type="button" id="drill-mark-out" title="Use current video time">Mark</button>
-        </div>
-        <div class="row">
-          <label>Name</label>
-          <input type="text" id="drill-filename" />
-        </div>
-        <button type="button" class="primary" id="drill-export">Export to Drill Clips</button>
-        <div class="status" id="drill-status"></div>
       </div>
     `;
 
     document.body.appendChild(panel);
 
+    const launcher = panel.querySelector(".launcher");
     const toggle = panel.querySelector(".toggle");
-    const body = panel.querySelector(".body");
+
+    function applyMinimized(minimized) {
+      panel.classList.toggle("minimized", !!minimized);
+    }
+
+    applyMinimized(await loadMinimized());
+
     toggle.addEventListener("click", () => {
-      const hidden = body.style.display === "none";
-      body.style.display = hidden ? "" : "none";
-      toggle.textContent = hidden ? "−" : "+";
+      applyMinimized(true);
+      saveMinimized(true);
+    });
+    launcher.addEventListener("click", () => {
+      applyMinimized(false);
+      saveMinimized(false);
     });
 
     const inInput = panel.querySelector("#drill-in");
