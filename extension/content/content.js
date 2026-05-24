@@ -70,6 +70,7 @@
           <div class="row">
             <label>Name</label>
             <input type="text" id="drill-filename" />
+            <button type="button" id="drill-open-folder" title="Open clips folder">Open</button>
           </div>
           <button type="button" class="primary" id="drill-export">Export to Drill Clips</button>
           <div class="status" id="drill-status"></div>
@@ -86,16 +87,28 @@
       panel.classList.toggle("minimized", !!minimized);
     }
 
-    applyMinimized(await loadMinimized());
+    function stop(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
 
-    toggle.addEventListener("click", () => {
+    toggle.addEventListener("click", (e) => {
+      stop(e);
       applyMinimized(true);
       saveMinimized(true);
     });
-    launcher.addEventListener("click", () => {
+    launcher.addEventListener("click", (e) => {
+      stop(e);
       applyMinimized(false);
       saveMinimized(false);
     });
+    for (const evt of ["mousedown", "pointerdown", "touchstart"]) {
+      toggle.addEventListener(evt, stop, true);
+      launcher.addEventListener(evt, stop, true);
+    }
+
+    applyMinimized(true);
+    loadMinimized().then(applyMinimized);
 
     const inInput = panel.querySelector("#drill-in");
     const outInput = panel.querySelector("#drill-out");
@@ -126,6 +139,20 @@
       }
       outInput.value = DrillMarkers.formatTime(video.currentTime);
       setStatus("");
+    });
+
+    panel.querySelector("#drill-open-folder").addEventListener("click", async () => {
+      setStatus("Opening folder…");
+      try {
+        const res = await chrome.runtime.sendMessage({ type: "openOutputDir" });
+        if (res?.ok) {
+          setStatus(`Opened: ${res.body?.path || "clips folder"}`, "ok");
+        } else {
+          setStatus(res?.error || "Failed to open folder", "error");
+        }
+      } catch (err) {
+        setStatus(err.message || String(err), "error");
+      }
     });
 
     const exportBtn = panel.querySelector("#drill-export");

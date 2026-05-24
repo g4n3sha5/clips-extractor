@@ -60,6 +60,10 @@ Plain `video.captureStream()` often records **video only** on Mac. This extensio
 
 The panel can be collapsed to a small circular **DC** button in the bottom-right corner — click it to expand again. The minimize state is remembered **per host** (`chrome.storage.sync`), so YouTube starts **minimized by default** (less in the way of the player) while Bilibili starts **expanded**. Toggle once and your preference sticks for that site.
 
+## Open clips folder
+
+Next to the **Name** field, the **Open** button opens the configured `output_dir` in your OS file browser (Finder / Explorer / xdg-open) by calling `POST /api/config/open-output-dir` on the local app.
+
 ## Settings
 
 Extension popup → **App URL** (default `http://127.0.0.1:3003`). Stored in `chrome.storage.sync`.

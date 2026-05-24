@@ -44,6 +44,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "openOutputDir") {
+    apiFetch("/api/config/open-output-dir", { method: "POST" })
+      .then((body) => sendResponse({ ok: true, body }))
+      .catch((err) => sendResponse({ ok: false, error: String(err.message || err) }));
+    return true;
+  }
+
   if (message?.type === "cancelUpload") {
     const id = message.uploadId;
     const controller = id ? activeUploads.get(id) : null;

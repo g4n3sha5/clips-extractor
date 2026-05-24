@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import platform
 import shutil
+import subprocess
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from config import load_settings, save_settings
 from models import ConfigResponse, ConfigUpdate
@@ -54,3 +56,31 @@ def update_config(body: ConfigUpdate) -> ConfigResponse:
 @router.get("/health")
 def health() -> dict[str, Any]:
     return {"status": "ok", "ffmpeg": bool(shutil.which("ffmpeg"))}
+
+
+@router.post("/config/open-output-dir")
+def open_output_dir() -> dict[str, Any]:
+    """Open the configured output folder in the user's file browser."""
+    settings = load_settings()
+    path = settings.output_dir
+    path.mkdir(parents=True, exist_ok=True)
+
+    system = platform.system()
+    if system == "Darwin":
+        cmd = ["open", str(path)]
+    elif system == "Windows":
+        cmd = ["explorer", str(path)]
+    else:
+        cmd = ["xdg-open", str(path)]
+
+    try:
+        subprocess.Popen(cmd)  # noqa: S603 — fixed command list, path from validated settings
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"File browser command not found: {cmd[0]}",
+        ) from e
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    return {"ok": True, "path": str(path)}
