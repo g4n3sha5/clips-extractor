@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from models import ClipItem
+from models import BrowserCacheResponse, ClipItem
+from services.browser_cache import save_uploads_and_import
 from services.browser_recording import save_upload_and_import
 
 router = APIRouter()
@@ -35,3 +38,28 @@ async def clip_from_recording(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
     return ClipItem(**item)
+
+
+@router.post("/cache/from-browser", response_model=BrowserCacheResponse)
+async def cache_from_browser(
+    video: UploadFile = File(...),
+    audio: Optional[UploadFile] = File(None),
+    source_url: str = Form(...),
+    title: str = Form(""),
+) -> BrowserCacheResponse:
+    if not video.filename and not source_url:
+        raise HTTPException(status_code=400, detail="No video uploaded")
+
+    try:
+        item = await save_uploads_and_import(
+            video_file=video,
+            audio_file=audio,
+            source_url=source_url,
+            title=title,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    return BrowserCacheResponse(**item)

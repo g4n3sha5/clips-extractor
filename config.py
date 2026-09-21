@@ -1,4 +1,4 @@
-import sys
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +20,10 @@ def _default_output_dir() -> Path:
 
 def _default_descriptions_dir() -> Path:
     return _default_output_dir() / "descriptions"
+
+
+def _default_ingest_dir() -> Path:
+    return PROJECT_ROOT / "ingest"
 
 
 def _resolve_path(path: Path) -> Path:
@@ -72,6 +76,22 @@ class Settings(BaseSettings):
         default=None,
         description="Optional Netscape cookies.txt (used when login enabled or path set)",
     )
+    ingest_dir: Path = Field(
+        default_factory=_default_ingest_dir,
+        description="Where processed transcript ingest JSON files are stored",
+    )
+    openai_api_key: Optional[str] = Field(
+        default=None,
+        description="OpenAI-compatible API key for transcript ingest (or set OPENAI_API_KEY)",
+    )
+    openai_base_url: str = Field(
+        default="https://api.openai.com/v1",
+        description="OpenAI-compatible API base URL",
+    )
+    openai_model: str = Field(
+        default="gpt-4o-mini",
+        description="Chat model used for transcript ingest",
+    )
 
 
 def _normalize_settings(settings: Settings) -> Settings:
@@ -81,9 +101,19 @@ def _normalize_settings(settings: Settings) -> Settings:
             "cache_dir": _resolve_path(settings.cache_dir),
             "output_dir": _resolve_path(settings.output_dir),
             "descriptions_dir": _resolve_path(settings.descriptions_dir),
+            "ingest_dir": _resolve_path(settings.ingest_dir),
             "bilibili_cookies_file": _resolve_path(cookies_file) if cookies_file else None,
         }
     )
+
+
+def resolve_openai_api_key(settings: Settings) -> Optional[str]:
+    """Prefer config key; fall back to OPENAI_API_KEY env."""
+    key = (settings.openai_api_key or "").strip()
+    if key:
+        return key
+    env = (os.environ.get("OPENAI_API_KEY") or "").strip()
+    return env or None
 
 
 def load_settings() -> Settings:
@@ -101,6 +131,7 @@ def save_settings(settings: Settings) -> None:
             "cache_dir": _path_for_storage(normalized.cache_dir),
             "output_dir": _path_for_storage(normalized.output_dir),
             "descriptions_dir": _path_for_storage(normalized.descriptions_dir),
+            "ingest_dir": _path_for_storage(normalized.ingest_dir),
             "bilibili_cookies_file": (
                 _path_for_storage(normalized.bilibili_cookies_file)
                 if normalized.bilibili_cookies_file

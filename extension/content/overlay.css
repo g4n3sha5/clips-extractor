@@ -96,6 +96,16 @@
   cursor: pointer;
 }
 
+#drill-clips-panel button.secondary {
+  background: #fff;
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+  width: 100%;
+  padding: 8px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 #drill-clips-panel button.primary {
   background: #1d4ed8;
   border-color: #1d4ed8;

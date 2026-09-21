@@ -208,6 +208,8 @@ def _friendly_bilibili_error(msg: str) -> str:
         return (
             "Bilibili blocked this download (region, login, or unavailable video)."
             + login_hint
+            + " Or open the video in the browser, use the Drill Clips extension, "
+            "and click “Cache this video” — that downloads from the player tab, not from this server."
             + proxy_hint
             + f" Details: {msg}"
         )

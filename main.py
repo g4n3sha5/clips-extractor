@@ -11,6 +11,7 @@ from routers import clips as clips_router
 from routers import config as config_router
 from routers import download as download_router
 from routers import extension as extension_router
+from routers import ingest as ingest_router
 from routers import instructional as instructional_router
 
 
@@ -21,6 +22,7 @@ async def lifespan(app: FastAPI):
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
     settings.output_dir.mkdir(parents=True, exist_ok=True)
     settings.descriptions_dir.mkdir(parents=True, exist_ok=True)
+    settings.ingest_dir.mkdir(parents=True, exist_ok=True)
     yield
 
 
@@ -42,6 +44,7 @@ app.include_router(cache_router.router, prefix="/api")
 app.include_router(download_router.router, prefix="/api")
 app.include_router(clips_router.router, prefix="/api")
 app.include_router(extension_router.router, prefix="/api")
+app.include_router(ingest_router.router, prefix="/api")
 
 # StaticFiles acts as a catch-all and should be mounted last.
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

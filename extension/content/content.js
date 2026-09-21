@@ -72,6 +72,7 @@
             <input type="text" id="drill-filename" />
             <button type="button" id="drill-open-folder" title="Open clips folder">Open</button>
           </div>
+          <button type="button" class="secondary" id="drill-cache">Cache this video</button>
           <button type="button" class="primary" id="drill-export">Export to Drill Clips</button>
           <div class="status" id="drill-status"></div>
         </div>
@@ -153,6 +154,161 @@
       } catch (err) {
         setStatus(err.message || String(err), "error");
       }
+    });
+
+    function formatBytes(n) {
+      if (!n) return "0 B";
+      if (n < 1024) return n + " B";
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+      return (n / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function filenameFromUrl(url, fallback) {
+      try {
+        const base = new URL(url).pathname.split("/").pop() || fallback;
+        return base.split("?")[0] || fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function waitForPageFetch(requestId, onProgress, timeoutMs) {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("Timed out downloading stream from the page."));
+        }, timeoutMs);
+        function onMsg(event) {
+          if (event.source !== window) return;
+          const d = event.data;
+          if (!d || d.requestId !== requestId) return;
+          if (d.type === "DRILL_FETCH_PROGRESS") {
+            if (typeof onProgress === "function") onProgress(d.received, d.total);
+            return;
+          }
+          if (d.type === "DRILL_FETCH_OK") {
+            cleanup();
+            resolve(d.buf);
+            return;
+          }
+          if (d.type === "DRILL_FETCH_ERR") {
+            cleanup();
+            reject(new Error(d.error || "Fetch failed"));
+          }
+        }
+        function cleanup() {
+          clearTimeout(timer);
+          window.removeEventListener("message", onMsg);
+        }
+        window.addEventListener("message", onMsg);
+      });
+    }
+
+    async function downloadStream(url, label, onProgress) {
+      const requestId = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
+      const pagePromise = waitForPageFetch(requestId, onProgress, 20 * 60 * 1000);
+      const started = await chrome.runtime.sendMessage({
+        type: "fetchInPage",
+        url,
+        requestId,
+      });
+      if (started?.ok) {
+        try {
+          return new Blob([await pagePromise]);
+        } catch {
+          /* fall through to extension fetch */
+        }
+      }
+      const res = await chrome.runtime.sendMessage({
+        type: "fetchMediaUrl",
+        url,
+        referrer: location.href,
+      });
+      if (!res?.ok) {
+        throw new Error(res?.error || `Failed to download ${label}`);
+      }
+      return new Blob([res.body.buf], { type: res.body.contentType || "" });
+    }
+
+    const cacheBtn = panel.querySelector("#drill-cache");
+    const CACHE_LABEL = "Cache this video";
+    let cacheBusy = false;
+    let cacheUploadId = null;
+
+    async function runCache() {
+      cacheBusy = true;
+      cacheUploadId = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
+      cacheBtn.textContent = "Cancel";
+      setStatus("Reading stream URLs from the player…");
+      try {
+        const extracted = await chrome.runtime.sendMessage({ type: "extractPageMedia" });
+        if (!extracted?.ok) {
+          throw new Error(extracted?.error || "Could not read player streams");
+        }
+        const media = extracted.body;
+        const height = media.height ? ` ${media.height}p` : "";
+        setStatus(`Downloading${height} video from this tab…`);
+        const videoBlob = await downloadStream(media.videoUrl, "video", (received, total) => {
+          const extra = total ? ` / ${formatBytes(total)}` : "";
+          setStatus(`Downloading video ${formatBytes(received)}${extra}`);
+        });
+        if (!videoBlob.size) throw new Error("Video download was empty");
+
+        let audioBlob = null;
+        if (media.audioUrl) {
+          setStatus("Downloading audio from this tab…");
+          audioBlob = await downloadStream(media.audioUrl, "audio", (received, total) => {
+            const extra = total ? ` / ${formatBytes(total)}` : "";
+            setStatus(`Downloading audio ${formatBytes(received)}${extra}`);
+          });
+        }
+
+        setStatus("Uploading to Drill Clip Extractor cache…");
+        const response = await chrome.runtime.sendMessage({
+          type: "uploadBrowserCache",
+          uploadId: cacheUploadId,
+          videoBlob,
+          videoFilename: filenameFromUrl(media.videoUrl, "video.mp4"),
+          audioBlob,
+          audioFilename: media.audioUrl ? filenameFromUrl(media.audioUrl, "audio.m4a") : "",
+          sourceUrl: media.pageUrl || window.location.href,
+          title: media.title || document.title || "",
+        });
+        if (!response?.ok) {
+          if (response?.cancelled) {
+            setStatus("Cancelled.", "");
+          } else {
+            throw new Error(response?.error || "Upload failed");
+          }
+        } else {
+          const mb = formatBytes(response.body?.size_bytes || videoBlob.size);
+          setStatus(`Cached (${mb}). Extract clips at localhost:3003.`, "ok");
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") {
+          setStatus("Cancelled.", "");
+        } else {
+          setStatus(err.message || String(err), "error");
+        }
+      } finally {
+        cacheBusy = false;
+        cacheUploadId = null;
+        cacheBtn.textContent = CACHE_LABEL;
+        cacheBtn.disabled = false;
+      }
+    }
+
+    cacheBtn.addEventListener("click", () => {
+      if (cacheBusy || cacheUploadId) {
+        if (cacheUploadId) {
+          chrome.runtime
+            .sendMessage({ type: "cancelUpload", uploadId: cacheUploadId })
+            .catch(() => {});
+        }
+        setStatus("Cancelling…");
+        return;
+      }
+      runCache();
     });
 
     const exportBtn = panel.querySelector("#drill-export");

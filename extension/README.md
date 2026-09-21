@@ -38,10 +38,13 @@ Notes for Firefox:
 
 1. Open a video on **bilibili.com** or **youtube.com** (with VPN/cookies if needed).
 2. Use the floating **Drill Clips** panel (bottom-right):
+   - **Cache this video** — downloads the player’s video+audio streams from this tab (VPN/cookies apply) into the app cache. Then cut many clips at `http://127.0.0.1:3003` without yt-dlp.
    - **Mark** at start and end while the video plays or is paused.
    - Set a **filename** (saved as `.mp4` in your clips folder).
    - **Export to Drill Clips** — records the segment and uploads to the app.
-3. Open `http://127.0.0.1:3003` to see the clip in your session list.
+3. Open `http://127.0.0.1:3003` to see cached videos and the session clip list.
+
+Wait until the video is actually playing before **Cache this video**. Reload the unpacked extension after updating it (new `scripting` permission).
 
 ## Audio on macOS
 

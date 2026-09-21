@@ -7,15 +7,22 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from config import load_settings, save_settings
+from config import load_settings, resolve_openai_api_key, save_settings
 from models import ConfigResponse, ConfigUpdate
 
 router = APIRouter()
 
 
+def _to_config_response(settings) -> ConfigResponse:
+    data = settings.model_dump()
+    data.pop("openai_api_key", None)
+    data["has_openai_api_key"] = bool(resolve_openai_api_key(settings))
+    return ConfigResponse(**data)
+
+
 @router.get("/config", response_model=ConfigResponse)
 def get_config() -> ConfigResponse:
-    return load_settings()
+    return _to_config_response(load_settings())
 
 
 @router.post("/config", response_model=ConfigResponse)
@@ -28,6 +35,8 @@ def update_config(body: ConfigUpdate) -> ConfigResponse:
         updates["output_dir"] = body.output_dir
     if body.descriptions_dir is not None:
         updates["descriptions_dir"] = body.descriptions_dir
+    if body.ingest_dir is not None:
+        updates["ingest_dir"] = body.ingest_dir
     if body.clip_crf is not None:
         updates["clip_crf"] = body.clip_crf
     if body.clip_preset is not None:
@@ -44,18 +53,33 @@ def update_config(body: ConfigUpdate) -> ConfigResponse:
         updates["bilibili_cookies_browser"] = b or None
     if body.bilibili_cookies_file is not None:
         updates["bilibili_cookies_file"] = body.bilibili_cookies_file
+    if body.openai_api_key is not None:
+        key = body.openai_api_key.strip()
+        updates["openai_api_key"] = key or None
+    if body.openai_base_url is not None:
+        base = body.openai_base_url.strip()
+        updates["openai_base_url"] = base or settings.openai_base_url
+    if body.openai_model is not None:
+        model = body.openai_model.strip()
+        updates["openai_model"] = model or settings.openai_model
     if updates:
         settings = settings.model_copy(update=updates)
         save_settings(settings)
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
     settings.output_dir.mkdir(parents=True, exist_ok=True)
     settings.descriptions_dir.mkdir(parents=True, exist_ok=True)
-    return settings
+    settings.ingest_dir.mkdir(parents=True, exist_ok=True)
+    return _to_config_response(settings)
 
 
 @router.get("/health")
 def health() -> dict[str, Any]:
-    return {"status": "ok", "ffmpeg": bool(shutil.which("ffmpeg"))}
+    settings = load_settings()
+    return {
+        "status": "ok",
+        "ffmpeg": bool(shutil.which("ffmpeg")),
+        "has_openai_api_key": bool(resolve_openai_api_key(settings)),
+    }
 
 
 @router.post("/config/open-output-dir")

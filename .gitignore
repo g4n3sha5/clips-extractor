@@ -4,6 +4,7 @@ session_clips.json
 bilibili_cookies.txt
 cache/
 clips/
+ingest/
 __pycache__/
 .pytest_cache/
 .venv/

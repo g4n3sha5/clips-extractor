@@ -51,7 +51,7 @@ When server-side download fails (geo / 412 / login), use the **browser extension
 
 1. Run the app on port **3003** (above).
 2. Load the unpacked extension from `extension/` (Chrome: **Load unpacked**; Firefox: temporary add-on).
-3. On Bilibili or YouTube, mark **in/out** in the floating panel and **Export** — the extension records the segment (with audio on macOS via Web Audio) and sends it to `POST /api/clips/from-recording`.
+3. On Bilibili or YouTube, wait until the video is playing, then **Cache this video** — the extension downloads the player streams from that tab (VPN/cookies apply) into the app cache. Or mark **in/out** and **Export** to record one segment to `POST /api/clips/from-recording`.
 
 See [extension/README.md](extension/README.md) for install steps and audio troubleshooting.
 
@@ -62,6 +62,24 @@ See [extension/README.md](extension/README.md) for install steps and audio troub
 3. The **library** dropdown lists videos already cached on disk (URLs are stored in `url_registry.json` next to the `.mp4` files).
 4. Clips go to the **output directory** (default `./clips/`). Each clip is saved as **MP4 (libx264 CRF + AAC)**. Tune encoding in **`config.json`** at the project root (`clip_crf`, `clip_preset`, `clip_audio_kbps`) or via **Settings** in the UI.
 5. **Clips this session** accumulates extractions until you **Clear list** or restart the server; switching URLs does not wipe the list.
+
+
+## Transcript ingest
+
+Section **Transcript ingest** on the main page:
+
+1. Paste the **instructional title** (used as context so ASR mistakes like “de la bida” become **de la riva**).
+2. Paste a raw transcript.
+3. Click **Process & save ingest** — fillers/CTAs are stripped, names corrected, key concepts summarized, JSON saved under `ingest/`.
+
+- Without an API key: offline glossary + filler cleanup (`mode: heuristic`).
+- With OpenAI key (Settings → AI ingest, or `OPENAI_API_KEY`): full LLM cleanup (`mode: llm`).
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /api/ingest` | Process title + transcript; optional `save` |
+| `GET /api/ingest` | List saved ingest JSON files |
+| `GET /api/ingest/{id}` | Load one ingest result |
 
 ## API (for debugging)
 
@@ -75,6 +93,7 @@ See [extension/README.md](extension/README.md) for install steps and audio troub
 | `GET /api/download/stream/{job_id}` | **SSE** download progress |
 | `POST /api/clips` | Extract clip (`start`, `end`, `filename`, optional `url`); sidecar description is auto: title + range |
 | `POST /api/clips/from-recording` | Import a browser-recorded segment (`multipart`: `file`, `filename`, `start`, `end`, `source_url`) |
+| `POST /api/cache/from-browser` | Import player streams captured in the browser (`multipart`: `video`, optional `audio`, `source_url`, `title`) |
 | `GET /api/clips` | Session clip list |
 | `GET /api/clip-file/{filename}` | Serve an extracted `.mp4` |
 | `GET /api/cache/status?url=` | Whether the URL is cached locally (+ size) |
@@ -82,6 +101,9 @@ See [extension/README.md](extension/README.md) for install steps and audio troub
 | `GET /api/cache/preview/{cache_key}` | Serve cached source `.mp4` for the timeline scrubber (browser) |
 | `DELETE /api/cache/videos/{cache_key}` | Remove one cached `.mp4` and its registry entry |
 | `DELETE /api/clips` | Clear the session clip list |
+| `POST /api/ingest` | Title-aware transcript cleanup + concept extract + save |
+| `GET /api/ingest` | List saved ingest JSON |
+| `GET /api/ingest/{id}` | Load one ingest result |
 
 ## Run tests
 

@@ -286,6 +286,7 @@
         <button type="button" class="btn-primary" id="prepare-btn">Prepare video</button>
         <span class="pill pill-muted" id="cache-pill" hidden>Not cached</span>
       </div>
+      <p class="hint">Bilibili geo-blocked? Open the video in the browser, use the Drill Clips extension, and click <strong>Cache this video</strong>.</p>
       <details class="panel" id="cache-panel">
         <summary>Cache library</summary>
         <table class="cache-table">
@@ -341,6 +342,45 @@
       <p class="hint" id="clips-empty">No clips yet.</p>
     </section>
 
+    <section id="ingest-section">
+      <h2>Transcript ingest</h2>
+      <p class="hint">Paste the instructional <strong>title</strong> (context for name fixes — e.g. “de la bida” → de la riva) and a raw transcript. AI cleans fillers, corrects names, summarizes concepts, and saves JSON under <code>ingest/</code>.</p>
+      <label for="ingest-title">Instructional title</label>
+      <input type="text" id="ingest-title" placeholder="Danaher — De La Riva Guard entries" autocomplete="off">
+      <label for="ingest-transcript" style="margin-top:0.75rem;">Raw transcript</label>
+      <textarea id="ingest-transcript" placeholder="um so you know from de la bida we insert the hook…"></textarea>
+      <div class="row" style="margin-top:0.5rem;">
+        <div class="field">
+          <label for="ingest-start">Start (optional)</label>
+          <input type="text" id="ingest-start" placeholder="0:00" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="ingest-end">End (optional)</label>
+          <input type="text" id="ingest-end" placeholder="5:00" autocomplete="off">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-primary" id="ingest-btn">Process &amp; save ingest</button>
+        <span class="pill pill-muted" id="ingest-mode-pill" hidden></span>
+      </div>
+      <div id="ingest-result" hidden style="margin-top:1rem;">
+        <label>Summary</label>
+        <p id="ingest-summary" style="margin:0.25rem 0 0.75rem;font-size:0.95rem;"></p>
+        <label>Corrections</label>
+        <ul id="ingest-corrections" style="margin:0.25rem 0 0.75rem;padding-left:1.2rem;font-size:0.9rem;"></ul>
+        <label>Concepts</label>
+        <ul id="ingest-concepts" style="margin:0.25rem 0 0.75rem;padding-left:1.2rem;font-size:0.9rem;"></ul>
+        <label>Cleaned transcript</label>
+        <textarea id="ingest-cleaned" readonly style="min-height:120px;margin-top:0.35rem;"></textarea>
+        <p class="hint" id="ingest-saved" style="margin-top:0.5rem;"></p>
+      </div>
+      <details class="panel" id="ingest-history-panel" style="margin-top:0.75rem;">
+        <summary>Saved ingests</summary>
+        <ul id="ingest-list" style="list-style:none;margin:0.5rem 0 0;padding:0;"></ul>
+        <p class="hint" id="ingest-empty">No saved ingests yet.</p>
+      </details>
+    </section>
+
     <section>
       <details class="panel" id="settings-panel">
         <summary>Storage &amp; encoding</summary>
@@ -351,6 +391,16 @@
         <input type="text" id="settings-output-dir" autocomplete="off" spellcheck="false">
         <label for="settings-descriptions-dir" style="margin-top:0.5rem;">Descriptions directory</label>
         <input type="text" id="settings-descriptions-dir" autocomplete="off" spellcheck="false">
+        <label for="settings-ingest-dir" style="margin-top:0.5rem;">Ingest directory</label>
+        <input type="text" id="settings-ingest-dir" autocomplete="off" spellcheck="false">
+        <h3 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);margin:1rem 0 0.5rem;">AI ingest (optional)</h3>
+        <label for="settings-openai-key">OpenAI API key</label>
+        <input type="password" id="settings-openai-key" placeholder="sk-… (or set OPENAI_API_KEY)" autocomplete="off" spellcheck="false">
+        <p class="hint" id="settings-openai-hint">Without a key, ingest still runs offline (glossary + filler strip). With a key, full LLM cleanup + summaries.</p>
+        <label for="settings-openai-model" style="margin-top:0.5rem;">Model</label>
+        <input type="text" id="settings-openai-model" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false">
+        <label for="settings-openai-base" style="margin-top:0.5rem;">API base URL</label>
+        <input type="text" id="settings-openai-base" placeholder="https://api.openai.com/v1" autocomplete="off" spellcheck="false">
         <div class="row" style="margin-top:0.5rem;">
           <div class="field">
             <label for="settings-crf">CRF (18–51)</label>
@@ -928,15 +978,25 @@
         document.getElementById("settings-cache-dir").value = cfg.cache_dir || "";
         document.getElementById("settings-output-dir").value = cfg.output_dir || "";
         document.getElementById("settings-descriptions-dir").value = cfg.descriptions_dir || "";
+        document.getElementById("settings-ingest-dir").value = cfg.ingest_dir || "";
         document.getElementById("settings-crf").value = cfg.clip_crf;
         document.getElementById("settings-preset").value = cfg.clip_preset || "";
         document.getElementById("settings-audio").value = cfg.clip_audio_kbps;
         document.getElementById("settings-proxy").value = cfg.proxy_url || "";
         document.getElementById("settings-bilibili-login").checked = !!cfg.bilibili_use_login;
         document.getElementById("settings-bilibili-browser").value = cfg.bilibili_cookies_browser || "firefox";
+        document.getElementById("settings-openai-model").value = cfg.openai_model || "gpt-4o-mini";
+        document.getElementById("settings-openai-base").value = cfg.openai_base_url || "https://api.openai.com/v1";
+        document.getElementById("settings-openai-key").placeholder = cfg.has_openai_api_key
+          ? "•••••••• (saved — leave blank to keep)"
+          : "sk-… (or set OPENAI_API_KEY)";
+        document.getElementById("settings-openai-hint").textContent = cfg.has_openai_api_key
+          ? "API key configured — ingest uses LLM mode."
+          : "Without a key, ingest still runs offline (glossary + filler strip). With a key, full LLM cleanup + summaries.";
         syncBilibiliLoginUi();
         var msg = "Cache: " + cfg.cache_dir + " · Clips: " + cfg.output_dir;
         if (health.ffmpeg === false) msg += " · ffmpeg missing";
+        if (cfg.has_openai_api_key) msg += " · AI ingest ready";
         document.getElementById("config-foot").textContent = msg;
       } catch (e) {}
     }
@@ -946,24 +1006,128 @@
         cache_dir: document.getElementById("settings-cache-dir").value.trim(),
         output_dir: document.getElementById("settings-output-dir").value.trim(),
         descriptions_dir: document.getElementById("settings-descriptions-dir").value.trim(),
+        ingest_dir: document.getElementById("settings-ingest-dir").value.trim(),
         clip_crf: parseInt(document.getElementById("settings-crf").value, 10),
         clip_preset: document.getElementById("settings-preset").value.trim() || "medium",
         clip_audio_kbps: parseInt(document.getElementById("settings-audio").value, 10),
         proxy_url: document.getElementById("settings-proxy").value.trim(),
         bilibili_use_login: document.getElementById("settings-bilibili-login").checked,
         bilibili_cookies_browser: document.getElementById("settings-bilibili-browser").value,
+        openai_model: document.getElementById("settings-openai-model").value.trim() || "gpt-4o-mini",
+        openai_base_url: document.getElementById("settings-openai-base").value.trim() || "https://api.openai.com/v1",
       };
+      var key = document.getElementById("settings-openai-key").value.trim();
+      if (key) body.openai_api_key = key;
       var res = await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!res.ok) { setStatus("Settings failed: " + (await readErrorBody(res))); return; }
+      document.getElementById("settings-openai-key").value = "";
       setStatus("Settings saved.");
       await loadConfigFoot();
       await refreshLibrary();
       await refreshCachePanel();
     }
 
+    function renderIngestResult(data) {
+      document.getElementById("ingest-result").hidden = false;
+      document.getElementById("ingest-summary").textContent = data.summary || "";
+      document.getElementById("ingest-cleaned").value = data.cleaned_transcript || "";
+      var corr = document.getElementById("ingest-corrections");
+      corr.innerHTML = "";
+      (data.corrections || []).forEach(function (c) {
+        var li = document.createElement("li");
+        li.textContent = (c.from || "") + " → " + (c.to || "") + (c.reason ? " (" + c.reason + ")" : "");
+        corr.appendChild(li);
+      });
+      if (!corr.children.length) {
+        var empty = document.createElement("li");
+        empty.textContent = "No name corrections.";
+        empty.style.color = "var(--muted)";
+        corr.appendChild(empty);
+      }
+      var concepts = document.getElementById("ingest-concepts");
+      concepts.innerHTML = "";
+      (data.concepts || []).forEach(function (c) {
+        var li = document.createElement("li");
+        li.innerHTML = "<strong>" + (c.name || "concept") + "</strong> — " + (c.summary || "");
+        concepts.appendChild(li);
+      });
+      if (!concepts.children.length) {
+        var emptyC = document.createElement("li");
+        emptyC.textContent = "No concepts extracted.";
+        emptyC.style.color = "var(--muted)";
+        concepts.appendChild(emptyC);
+      }
+      var pill = document.getElementById("ingest-mode-pill");
+      pill.hidden = false;
+      pill.textContent = data.mode === "llm" ? "LLM" : "Offline";
+      pill.className = "pill " + (data.mode === "llm" ? "pill-ok" : "pill-muted");
+      document.getElementById("ingest-saved").textContent = data.saved_path
+        ? "Saved: " + data.saved_path
+        : "Not saved to disk.";
+    }
+
+    async function refreshIngestList() {
+      var list = document.getElementById("ingest-list");
+      var empty = document.getElementById("ingest-empty");
+      list.innerHTML = "";
+      try {
+        var res = await fetch("/api/ingest");
+        if (!res.ok) return;
+        var data = await res.json();
+        var items = data.items || [];
+        empty.hidden = items.length > 0;
+        items.forEach(function (item) {
+          var li = document.createElement("li");
+          li.style.cssText = "padding:0.45rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;";
+          li.innerHTML = "<div class=\"name\">" + (item.title || item.id) + "</div>"
+            + "<div class=\"sub\" style=\"font-size:0.8rem;color:var(--muted);\">" + (item.mode || "") + " · " + (item.id || "") + "</div>";
+          list.appendChild(li);
+        });
+      } catch (e) {}
+    }
+
+    async function onIngestClick() {
+      var title = document.getElementById("ingest-title").value.trim();
+      var transcript = document.getElementById("ingest-transcript").value.trim();
+      if (!title || !transcript) {
+        setStatus("Title and transcript are required for ingest.");
+        return;
+      }
+      var body = {
+        title: title,
+        transcript: transcript,
+        source_url: document.getElementById("url-input").value.trim() || null,
+        start: document.getElementById("ingest-start").value.trim() || null,
+        end: document.getElementById("ingest-end").value.trim() || null,
+        save: true,
+      };
+      setStatus("Processing ingest…");
+      document.getElementById("ingest-btn").disabled = true;
+      try {
+        var res = await fetch("/api/ingest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          setStatus("Ingest failed: " + (await readErrorBody(res)));
+          return;
+        }
+        var data = await res.json();
+        renderIngestResult(data);
+        setStatus("Ingest saved (" + data.mode + ").");
+        await refreshIngestList();
+      } catch (e) {
+        setStatus("Ingest failed: " + (e.message || e));
+      } finally {
+        document.getElementById("ingest-btn").disabled = false;
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("clip-form").addEventListener("submit", onClipSubmit);
       document.getElementById("prepare-btn").addEventListener("click", onPrepareClick);
+      document.getElementById("ingest-btn").addEventListener("click", onIngestClick);
       document.getElementById("clear-clips-btn").addEventListener("click", async function () {
         if (!window.confirm("Clear session clip list?")) return;
         await fetch("/api/clips", { method: "DELETE" });
@@ -972,6 +1136,9 @@
       document.getElementById("settings-save-btn").addEventListener("click", saveSettings);
       document.getElementById("settings-bilibili-login").addEventListener("change", syncBilibiliLoginUi);
       document.getElementById("cache-panel").addEventListener("toggle", function () { if (this.open) refreshCachePanel(); });
+      document.getElementById("ingest-history-panel").addEventListener("toggle", function () {
+        if (this.open) refreshIngestList();
+      });
 
       var urlInput = document.getElementById("url-input");
       var debounce = null;
@@ -1005,6 +1172,7 @@
       refreshLibrary();
       refreshCachePanel();
       refreshCacheStatus();
+      refreshIngestList();
     });
   </script>
 </body>
